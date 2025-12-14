@@ -3,7 +3,7 @@ service: gym-workout-tracker
 provider:
   name: aws
   runtime: nodejs18.x
-  region: ${opt:region, 'us-east-1'}
+  region: us-east-1
   environment:
     AWS_REGION: ${self:provider.region}
     RDS_CLUSTER_ARN: ${env:RDS_CLUSTER_ARN}
