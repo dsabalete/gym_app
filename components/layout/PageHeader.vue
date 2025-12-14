@@ -1,8 +1,8 @@
 <template>
   <div class="mb-6 flex items-center justify-between layout-page-header">
     <div>
-      <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">{{ title }}</h2>
-      <p v-if="subtitle" class="text-sm text-gray-600 dark:text-gray-200 mt-1">{{ subtitle }}</p>
+      <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-50">{{ title }}</h2>
+      <p v-if="subtitle" class="text-sm text-gray-600 dark:text-gray-100 mt-1">{{ subtitle }}</p>
     </div>
     <div class="flex items-center space-x-2">
       <slot name="actions" />

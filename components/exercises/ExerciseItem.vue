@@ -2,9 +2,9 @@
   <UiCard class="exercises-exercise-item">
     <template #header>
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-medium text-gray-900">{{ exercise.name }}</h3>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200">{{ exercise.name }}</h3>
         <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-500">{{ exercise.sets.length }} sets</span>
+          <span class="text-sm text-gray-500 dark:text-gray-200">{{ exercise.sets.length }} sets</span>
           <button class="text-red-600 hover:text-red-700" @click="emit('remove-exercise', exercise)">Remove
             Exercise</button>
         </div>

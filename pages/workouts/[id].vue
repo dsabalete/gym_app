@@ -17,7 +17,7 @@
     </UiCard>
     <div v-else class="space-y-6">
       <UiCard>
-        <h2 class="text-xl font-semibold text-gray-900">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-300">
           {{ formatDate(workout.date) }}
         </h2>
         <p class="text-sm text-gray-500 mt-1">

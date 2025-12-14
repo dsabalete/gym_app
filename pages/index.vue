@@ -1,32 +1,3 @@
-<template>
-  <div class="px-4 py-6 sm:px-0">
-    <div class="grid grid-cols-3 gap-4">
-      <UiCard>
-        <h3 class="text-xs font-medium text-gray-600 mb-1">Total Workouts</h3>
-        <p class="text-2xl font-bold text-gray-900">{{ stats.totalWorkouts }}</p>
-      </UiCard>
-      <UiCard>
-        <h3 class="text-xs font-medium text-gray-600 mb-1">This Week</h3>
-        <p class="text-2xl font-bold text-gray-900">{{ stats.thisWeekWorkouts }}</p>
-      </UiCard>
-      <UiCard>
-        <h3 class="text-xs font-medium text-gray-600 mb-1">Total Exercises</h3>
-        <p class="text-2xl font-bold text-gray-900">{{ stats.totalExercises }}</p>
-      </UiCard>
-    </div>
-    <div class="mt-8">
-      <LayoutPageHeader title="Recent Workouts">
-        <template #actions>
-          <NuxtLink to="/workouts/new">
-            <UiButton variant="primary">New Workout</UiButton>
-          </NuxtLink>
-        </template>
-      </LayoutPageHeader>
-      <WorkoutsWorkoutList :workouts="recentWorkouts" :loading="loading" @delete="deleteWorkout" />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import type { Workout } from '~/types/workout'
 
@@ -88,3 +59,42 @@ onMounted(() => {
   fetchDashboardData()
 })
 </script>
+
+<template>
+  <div class="px-4 py-6 sm:px-0">
+    <div class="grid grid-cols-3 gap-4">
+      <UiCard>
+        <h3 class="card-title">Total Workouts</h3>
+        <p class="card-content">{{ stats.totalWorkouts }}</p>
+      </UiCard>
+      <UiCard>
+        <h3 class="card-title">This Week</h3>
+        <p class="card-content">{{ stats.thisWeekWorkouts }}</p>
+      </UiCard>
+      <UiCard>
+        <h3 class="card-title">Total Exercises</h3>
+        <p class="card-content">{{ stats.totalExercises }}</p>
+      </UiCard>
+    </div>
+    <div class="mt-8">
+      <LayoutPageHeader title="Recent Workouts">
+        <template #actions>
+          <NuxtLink to="/workouts/new">
+            <UiButton variant="primary">New Workout</UiButton>
+          </NuxtLink>
+        </template>
+      </LayoutPageHeader>
+      <WorkoutsWorkoutList :workouts="recentWorkouts" :loading="loading" @delete="deleteWorkout" />
+    </div>
+  </div>
+</template>
+
+<style lang="css" scoped>
+.card-title {
+  @apply text-xs font-medium text-gray-600 dark:text-gray-300 mb-1;
+}
+
+.card-content {
+  @apply text-2xl font-bold text-gray-900 dark:text-gray-300;
+}
+</style>

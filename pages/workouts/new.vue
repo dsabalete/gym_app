@@ -16,7 +16,7 @@
       <!-- Exercises -->
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <h2 class="text-lg font-medium text-gray-900">Exercises</h2>
+          <h2 class="text-lg font-medium text-gray-900 dark:text-gray-200">Exercises</h2>
           <UiButton type="button" variant="primary" @click="addExercise">Add Exercise</UiButton>
         </div>
 
@@ -27,7 +27,7 @@
 
         <div v-for="(exercise, exerciseIndex) in workout.exercises" :key="exercise.id" class="card">
           <div class="flex justify-between items-start mb-4">
-            <h3 class="text-md font-medium text-gray-900">Exercise {{ exerciseIndex + 1 }}</h3>
+            <h3 class="text-md font-medium text-gray-900 dark:text-gray-200">Exercise {{ exerciseIndex + 1 }}</h3>
             <button type="button" @click="removeExercise(exerciseIndex)" class="text-red-600 hover:text-red-700">
               Remove
             </button>

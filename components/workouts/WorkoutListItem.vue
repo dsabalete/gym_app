@@ -3,7 +3,7 @@
     <template #header>
       <div class="flex justify-between items-start">
         <div>
-          <h3 class="text-lg font-medium text-gray-900">{{ formatDate(workout.date) }}</h3>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-300">{{ formatDate(workout.date) }}</h3>
           <p class="text-sm text-gray-500 mt-1">
             {{ workout.exercises.length }} exercises • {{ totalSets }} sets
           </p>
