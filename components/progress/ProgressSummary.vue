@@ -2,16 +2,16 @@
   <UiCard>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div>
-        <h3 class="text-xs font-medium text-gray-600 mb-1">Total Workouts</h3>
-        <p class="text-2xl font-bold text-gray-900">{{ totalWorkouts }}</p>
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Total Workouts</h3>
+        <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ totalWorkouts }}</p>
       </div>
       <div>
-        <h3 class="text-xs font-medium text-gray-600 mb-1">This Week</h3>
-        <p class="text-2xl font-bold text-gray-900">{{ thisWeek }}</p>
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">This Week</h3>
+        <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ thisWeek }}</p>
       </div>
       <div>
-        <h3 class="text-xs font-medium text-gray-600 mb-1">Total Exercises</h3>
-        <p class="text-2xl font-bold text-gray-900">{{ totalExercises }}</p>
+        <h3 class="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Total Exercises</h3>
+        <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ totalExercises }}</p>
       </div>
     </div>
   </UiCard>

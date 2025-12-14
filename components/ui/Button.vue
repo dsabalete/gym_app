@@ -39,7 +39,7 @@ const sizeMap: Record<typeof props.size, string> = {
 const variantMap: Record<typeof props.variant, string> = {
   primary: 'btn-primary',
   secondary: 'btn-secondary',
-  ghost: 'bg-transparent text-primary-700 hover:bg-primary-50 border border-primary-200'
+  ghost: 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'
 }
 
 const classes = computed(() => {
