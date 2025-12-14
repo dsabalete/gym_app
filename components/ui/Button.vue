@@ -1,11 +1,7 @@
 <template>
-  <button
-    :type="type"
-    :disabled="disabled || loading"
-    :class="classes"
-    @click="onClick"
-  >
-    <span v-if="loading" class="mr-2 inline-block animate-spin rounded-full border-2 border-white/60 border-t-transparent h-4 w-4"></span>
+  <button :type="type" :disabled="disabled || loading" :class="classes" @click="onClick">
+    <span v-if="loading"
+      class="mr-2 inline-block animate-spin rounded-full border-2 border-white/60 border-t-transparent h-4 w-4"></span>
     <slot />
   </button>
 </template>
@@ -39,7 +35,7 @@ const sizeMap: Record<typeof props.size, string> = {
 const variantMap: Record<typeof props.variant, string> = {
   primary: 'btn-primary',
   secondary: 'btn-secondary',
-  ghost: 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'
+  ghost: 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:hover:text-white dark:hover:bg-gray-700'
 }
 
 const classes = computed(() => {

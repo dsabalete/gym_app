@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
     <nav class="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -8,13 +8,13 @@
           </div>
           <div class="flex items-center">
             <div class="hidden md:flex items-center space-x-4">
-              <NuxtLink to="/" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 hover:dark:text-white">Dashboard</NuxtLink>
-              <NuxtLink to="/workouts" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 hover:dark:text-white">Workouts</NuxtLink>
-              <NuxtLink to="/progress" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 hover:dark:text-white">Progress</NuxtLink>
+              <NuxtLink to="/" class="text-gray-600 hover:text-gray-900 dark:text-gray-200 hover:dark:text-white">Dashboard</NuxtLink>
+              <NuxtLink to="/workouts" class="text-gray-600 hover:text-gray-900 dark:text-gray-200 hover:dark:text-white">Workouts</NuxtLink>
+              <NuxtLink to="/progress" class="text-gray-600 hover:text-gray-900 dark:text-gray-200 hover:dark:text-white">Progress</NuxtLink>
               <ThemeToggle />
             </div>
             <button
-              class="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              class="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
               aria-controls="mobile-menu"
               :aria-expanded="mobileOpen ? 'true' : 'false'"
               @click="mobileOpen = !mobileOpen"
