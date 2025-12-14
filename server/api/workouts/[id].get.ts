@@ -14,11 +14,60 @@ export default defineEventHandler(async (event) => {
 
     const client = createRdsClient()
 
+    let targetWorkoutId = workoutId
+
+    const wRes = await client.execute(
+      `SELECT id, user_id, date, created_at 
+       FROM workouts 
+       WHERE id = :id`,
+      { id: targetWorkoutId }
+    )
+
+    if (!wRes.records.length) {
+      const exRes = await client.execute(
+        `SELECT e.workout_id 
+         FROM exercises e 
+         WHERE e.id = :id`,
+        { id: targetWorkoutId }
+      )
+
+      if (!exRes.records.length) {
+        const setRes = await client.execute(
+          `SELECT es.exercise_id 
+           FROM exercise_sets es 
+           WHERE es.id = :id`,
+          { id: targetWorkoutId }
+        )
+
+        if (!setRes.records.length) {
+          throw createError({
+            statusCode: 404,
+            statusMessage: 'Workout not found'
+          })
+        }
+
+        const exerciseId = setRes.records[0].exercise_id
+        const exToW = await client.execute(
+          `SELECT workout_id FROM exercises WHERE id = :exerciseId`,
+          { exerciseId }
+        )
+        if (!exToW.records.length) {
+          throw createError({
+            statusCode: 404,
+            statusMessage: 'Workout not found'
+          })
+        }
+        targetWorkoutId = exToW.records[0].workout_id
+      } else {
+        targetWorkoutId = exRes.records[0].workout_id
+      }
+    }
+
     const workoutResult = await client.execute(
       `SELECT id, date, created_at 
        FROM workouts 
        WHERE user_id = :userId AND id = :workoutId`,
-      { userId, workoutId }
+      { userId, workoutId: targetWorkoutId }
     )
 
     if (!workoutResult.records.length) {
@@ -41,7 +90,7 @@ export default defineEventHandler(async (event) => {
        FROM exercises 
        WHERE workout_id = :workoutId 
        ORDER BY id`,
-      { workoutId }
+      { workoutId: targetWorkoutId }
     )
 
     if (exercisesResult.records.length) {

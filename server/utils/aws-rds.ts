@@ -115,7 +115,8 @@ export class AwsRdsClient {
       const row: any = {}
       response.columnMetadata?.forEach((meta: any, index: number) => {
         const value = record[index]
-        row[meta.name] = this.extractValue(value)
+        const key = (meta.label && String(meta.label).trim().length > 0) ? meta.label : meta.name
+        row[key] = this.extractValue(value)
       })
       return row
     })
