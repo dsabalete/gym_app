@@ -52,11 +52,10 @@
 
             <div v-for="(set, setIndex) in exercise.sets" :key="set.id" class="grid grid-cols-3 gap-3 items-end">
               <div>
-                <label :for="`set-number-${exerciseIndex}-${setIndex}`" class="block text-xs text-gray-600 mb-1">
+                <label class="block text-xs text-gray-600 mb-1">
                   Set #
                 </label>
-                <UiInput :id="`set-number-${exerciseIndex}-${setIndex}`" v-model.number="set.setNumber" type="number"
-                  label="Set #" />
+                <div class="px-3 py-2 border rounded text-sm text-gray-900">{{ set.setNumber }}</div>
               </div>
 
               <div>
