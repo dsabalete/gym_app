@@ -1,100 +1,56 @@
 <template>
-  <div>
-    <div class="px-4 py-6 sm:px-0">
-      <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold text-gray-900">Workout Detail</h1>
-        <NuxtLink to="/workouts" class="btn-primary">
-          Back to Workouts
+  <div class="px-4 py-6 sm:px-0">
+    <PageHeader title="Workout Detail">
+      <template #actions>
+        <NuxtLink to="/workouts">
+          <UiButton variant="primary">Back to Workouts</UiButton>
         </NuxtLink>
-      </div>
-
-      <div v-if="loading" class="text-center py-8">
-        <p class="text-gray-500">Loading workout...</p>
-      </div>
-
-      <div v-else-if="error" class="card">
-        <p class="text-red-600">{{ error }}</p>
-      </div>
-
-      <div v-else-if="!workout" class="card">
-        <p class="text-gray-500">Workout not found.</p>
-      </div>
-
-      <div v-else class="space-y-6">
-        <div class="card">
-          <h2 class="text-xl font-semibold text-gray-900">
-            {{ formatDate(workout.date) }}
-          </h2>
-          <p class="text-sm text-gray-500 mt-1">
-            {{ workout.exercises.length }} exercises • {{ totalSets }} sets
-          </p>
-          <div class="mt-4 flex items-center gap-2">
-            <input v-model="newExerciseName" type="text" placeholder="New exercise name"
-              class="border rounded px-3 py-2 w-64" />
-            <button @click="addExercise" class="btn-primary">Add Exercise</button>
-          </div>
+      </template>
+    </PageHeader>
+    <div v-if="loading" class="text-center py-8">
+      <UiSkeleton class="mx-auto" width="240px" height="20px" />
+      <p class="text-gray-500 mt-2">Loading workout...</p>
+    </div>
+    <UiAlert v-else-if="error" type="error" :message="error" />
+    <UiCard v-else-if="!workout">
+      <p class="text-gray-500">Workout not found.</p>
+    </UiCard>
+    <div v-else class="space-y-6">
+      <UiCard>
+        <h2 class="text-xl font-semibold text-gray-900">
+          {{ formatDate(workout.date) }}
+        </h2>
+        <p class="text-sm text-gray-500 mt-1">
+          {{ workout.exercises.length }} exercises • {{ totalSets }} sets
+        </p>
+        <div class="mt-4">
+          <ExerciseEditor v-model="newExerciseName" @submit="onAddExercise" />
         </div>
-
-        <div class="space-y-4">
-          <div v-for="exercise in workout.exercises" :key="exercise.id" class="card">
-            <div class="flex justify-between items-center">
-              <h3 class="text-lg font-medium text-gray-900">{{ exercise.name }}</h3>
-              <span class="text-sm text-gray-500">{{ exercise.sets.length }} sets</span>
-              <button @click="removeExercise(exercise)" class="text-red-600 hover:text-red-700">Remove Exercise</button>
-            </div>
-            <div class="mt-4">
-              <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Set
-                      </th>
-                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reps
-                      </th>
-                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight
-                      </th>
-                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="set in exercise.sets" :key="set.id">
-                      <td class="px-3 py-2 text-sm text-gray-900">
-                        <input v-model.number="set.setNumber" type="number" min="1"
-                          class="w-16 border rounded px-2 py-1" />
-                      </td>
-                      <td class="px-3 py-2 text-sm text-gray-900">
-                        <input v-model.number="set.reps" type="number" min="1" class="w-20 border rounded px-2 py-1" />
-                      </td>
-                      <td class="px-3 py-2 text-sm text-gray-900">
-                        <input v-model.number="set.weight" type="number" step="0.5" min="0"
-                          class="w-24 border rounded px-2 py-1" />
-                      </td>
-                      <td class="px-3 py-2 text-sm text-gray-900">
-                        <button @click="saveSet(set)" class="btn-secondary mr-2">Save</button>
-                        <button @click="removeSet(set)" class="text-red-600 hover:text-red-700">Delete</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div class="mt-4">
-              <button @click="addSet(exercise)" class="btn-primary">Add Set</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      </UiCard>
+      <ExerciseList :exercises="workout.exercises" @add-set="addSet" @save-set="saveSet" @remove-set="removeSet"
+        @remove-exercise="removeExercise" />
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import PageHeader from '~/components/layout/PageHeader.vue'
+import UiButton from '~/components/ui/Button.vue'
+import UiCard from '~/components/ui/Card.vue'
+import UiAlert from '~/components/ui/Alert.vue'
+import UiSkeleton from '~/components/ui/Skeleton.vue'
+import ExerciseList from '~/components/exercises/ExerciseList.vue'
+import ExerciseEditor from '~/components/exercises/ExerciseEditor.vue'
+import type { Workout } from '~/types/workout'
+import type { Exercise, ExerciseSet } from '~/types/exercise'
+import { formatDateUTC } from '~/utils/date'
+
 const route = useRoute()
-const loading = ref(true)
-const error = ref('')
-const workout = ref(null)
-const newExerciseName = ref('')
+
+const loading = ref<boolean>(true)
+const error = ref<string>('')
+const workout = ref<Workout | null>(null)
+const newExerciseName = ref<string>('')
 
 const userId = 'user123'
 
@@ -102,11 +58,11 @@ const fetchWorkout = async () => {
   try {
     loading.value = true
     error.value = ''
-    const response = await $fetch(`/api/workouts/${route.params.id}`, {
+    const response: any = await $fetch(`/api/workouts/${route.params.id}`, {
       query: { userId }
     })
     workout.value = response.workout
-  } catch (err) {
+  } catch (err: any) {
     const status = err?.statusCode || err?.status
     const message = err?.statusMessage || err?.data?.statusMessage || 'Failed to load workout'
     error.value = status === 404 ? 'Workout not found' : message
@@ -119,23 +75,16 @@ const fetchWorkout = async () => {
   }
 }
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
+const formatDate = (dateString: string) => formatDateUTC(dateString)
 
 const totalSets = computed(() => {
   if (!workout.value) return 0
-  return workout.value.exercises.reduce((total, exercise) => {
+  return workout.value.exercises.reduce((total: number, exercise: Exercise) => {
     return total + exercise.sets.length
   }, 0)
 })
 
-const addSet = async (exercise) => {
+const addSet = async (exercise: Exercise) => {
   try {
     await $fetch(`/api/exercises/${exercise.id}/sets`, {
       method: 'POST',
@@ -149,7 +98,7 @@ const addSet = async (exercise) => {
   }
 }
 
-const saveSet = async (set) => {
+const saveSet = async (set: ExerciseSet) => {
   try {
     await $fetch(`/api/exercise-sets/${set.id}`, {
       method: 'PATCH',
@@ -167,7 +116,7 @@ const saveSet = async (set) => {
   }
 }
 
-const removeSet = async (set) => {
+const removeSet = async (set: ExerciseSet) => {
   if (!confirm('Delete this set?')) return
   try {
     await $fetch(`/api/exercise-sets/${set.id}`, {
@@ -185,19 +134,18 @@ onMounted(() => {
   fetchWorkout()
 })
 
-const addExercise = async () => {
-  const name = newExerciseName.value.trim()
+const onAddExercise = async (name: string) => {
   if (!name) {
     alert('Please enter an exercise name')
     return
   }
   try {
+    if (!workout.value) return
     await $fetch(`/api/workouts/${workout.value.id}/exercises`, {
       method: 'POST',
       query: { userId },
       body: { name }
     })
-    newExerciseName.value = ''
     await fetchWorkout()
   } catch (err) {
     console.error('Error adding exercise:', err)
@@ -205,7 +153,7 @@ const addExercise = async () => {
   }
 }
 
-const removeExercise = async (exercise) => {
+const removeExercise = async (exercise: Exercise) => {
   if (!confirm(`Remove exercise "${exercise.name}"? This will delete its sets.`)) return
   try {
     await $fetch(`/api/exercises/${exercise.id}`, {
