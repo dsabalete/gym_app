@@ -1,12 +1,12 @@
 <template>
   <div class="px-4 py-6 sm:px-0">
-    <PageHeader title="New Workout">
+    <LayoutPageHeader title="New Workout">
       <template #actions>
         <NuxtLink to="/">
           <UiButton variant="secondary">Back to Dashboard</UiButton>
         </NuxtLink>
       </template>
-    </PageHeader>
+    </LayoutPageHeader>
 
     <form @submit.prevent="saveWorkout" class="space-y-6">
       <UiCard>
@@ -88,11 +88,6 @@
 </template>
 
 <script setup lang="ts">
-import PageHeader from '~/components/layout/PageHeader.vue'
-import UiButton from '~/components/ui/Button.vue'
-import UiCard from '~/components/ui/Card.vue'
-import UiInput from '~/components/ui/Input.vue'
-
 const loading = ref<boolean>(false)
 const workout = ref<{ date: string; exercises: Array<{ id: number; name: string; sets: Array<{ id: number; setNumber: number; reps: number; weight: number }> }> }>({
   date: '',

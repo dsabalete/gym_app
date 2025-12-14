@@ -18,7 +18,6 @@
 </template>
 
 <script setup lang="ts">
-import UiCard from '~/components/ui/Card.vue'
 import type { Workout } from '~/types/workout'
 
 const props = defineProps<{

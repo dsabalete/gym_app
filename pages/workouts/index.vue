@@ -1,19 +1,16 @@
 <template>
   <div class="page-workouts px-4 py-6 sm:px-0">
-    <PageHeader title="Workouts">
+    <LayoutPageHeader title="Workouts">
       <template #actions>
         <NuxtLink to="/workouts/new">
           <UiButton variant="primary">New Workout</UiButton>
         </NuxtLink>
       </template>
-    </PageHeader>
-    <WorkoutList :workouts="workouts" :loading="loading" @delete="deleteWorkout" />
+    </LayoutPageHeader>
+    <WorkoutsWorkoutList :workouts="workouts" :loading="loading" @delete="deleteWorkout" />
   </div>
 </template>
 <script setup lang="ts">
-import PageHeader from '~/components/layout/PageHeader.vue'
-import UiButton from '~/components/ui/Button.vue'
-import WorkoutList from '~/components/workouts/WorkoutList.vue'
 import type { Workout } from '~/types/workout'
 
 const loading = ref<boolean>(true)

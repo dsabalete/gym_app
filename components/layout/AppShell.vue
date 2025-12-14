@@ -14,7 +14,7 @@
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-200 hover:dark:text-white">Workouts</NuxtLink>
               <NuxtLink to="/progress"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-200 hover:dark:text-white">Progress</NuxtLink>
-              <ThemeToggle />
+              <UiThemeToggle />
             </div>
             <button
               class="md:hidden inline-flex items-center justify-center rounded-md p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-200 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -47,7 +47,7 @@
             class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700">
             Progress</NuxtLink>
           <div class="pt-2">
-            <ThemeToggle />
+            <UiThemeToggle />
           </div>
         </div>
       </div>
@@ -59,6 +59,5 @@
 </template>
 
 <script setup lang="ts">
-import ThemeToggle from '~/components/ui/ThemeToggle.vue'
 const mobileOpen = ref(false)
 </script>

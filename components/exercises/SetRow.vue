@@ -17,7 +17,6 @@
 </template>
 
 <script setup lang="ts">
-import UiButton from '~/components/ui/Button.vue'
 import type { ExerciseSet } from '~/types/exercise'
 
 const props = defineProps<{

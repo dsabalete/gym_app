@@ -14,8 +14,5 @@
 </template>
 
 <script setup lang="ts">
-import UiButton from '~/components/ui/Button.vue'
-import { useTheme } from '~/composables/useTheme'
-
 const { theme, toggleTheme } = useTheme()
 </script>

@@ -36,8 +36,6 @@
 </template>
 
 <script setup lang="ts">
-import UiCard from '~/components/ui/Card.vue'
-import UiButton from '~/components/ui/Button.vue'
 import { formatDateUTC } from '~/utils/date'
 import type { Workout } from '~/types/workout'
 

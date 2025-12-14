@@ -6,9 +6,6 @@
 </template>
 
 <script setup lang="ts">
-import UiInput from '~/components/ui/Input.vue'
-import UiButton from '~/components/ui/Button.vue'
-
 const props = defineProps<{
   modelValue?: string
 }>()

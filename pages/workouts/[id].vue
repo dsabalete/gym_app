@@ -1,12 +1,12 @@
 <template>
   <div class="px-4 py-6 sm:px-0">
-    <PageHeader title="Workout Detail">
+    <LayoutPageHeader title="Workout Detail">
       <template #actions>
         <NuxtLink to="/workouts">
           <UiButton variant="primary">Back to Workouts</UiButton>
         </NuxtLink>
       </template>
-    </PageHeader>
+    </LayoutPageHeader>
     <div v-if="loading" class="text-center py-8">
       <UiSkeleton class="mx-auto" width="240px" height="20px" />
       <p class="text-gray-500 mt-2">Loading workout...</p>
@@ -24,23 +24,16 @@
           {{ workout.exercises.length }} exercises • {{ totalSets }} sets
         </p>
         <div class="mt-4">
-          <ExerciseEditor v-model="newExerciseName" @submit="onAddExercise" />
+          <ExercisesExerciseEditor v-model="newExerciseName" @submit="onAddExercise" />
         </div>
       </UiCard>
-      <ExerciseList :exercises="workout.exercises" @add-set="addSet" @save-set="saveSet" @remove-set="removeSet"
-        @remove-exercise="removeExercise" />
+      <ExercisesExerciseList :exercises="workout.exercises" @add-set="addSet" @save-set="saveSet"
+        @remove-set="removeSet" @remove-exercise="removeExercise" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import PageHeader from '~/components/layout/PageHeader.vue'
-import UiButton from '~/components/ui/Button.vue'
-import UiCard from '~/components/ui/Card.vue'
-import UiAlert from '~/components/ui/Alert.vue'
-import UiSkeleton from '~/components/ui/Skeleton.vue'
-import ExerciseList from '~/components/exercises/ExerciseList.vue'
-import ExerciseEditor from '~/components/exercises/ExerciseEditor.vue'
 import type { Workout } from '~/types/workout'
 import type { Exercise, ExerciseSet } from '~/types/exercise'
 import { formatDateUTC } from '~/utils/date'

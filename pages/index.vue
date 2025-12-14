@@ -15,27 +15,19 @@
       </UiCard>
     </div>
     <div class="mt-8">
-      <PageHeader title="Recent Workouts">
+      <LayoutPageHeader title="Recent Workouts">
         <template #actions>
           <NuxtLink to="/workouts/new">
             <UiButton variant="primary">New Workout</UiButton>
           </NuxtLink>
         </template>
-      </PageHeader>
-      <WorkoutList
-        :workouts="recentWorkouts"
-        :loading="loading"
-        @delete="deleteWorkout"
-      />
+      </LayoutPageHeader>
+      <WorkoutsWorkoutList :workouts="recentWorkouts" :loading="loading" @delete="deleteWorkout" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import PageHeader from '~/components/layout/PageHeader.vue'
-import UiCard from '~/components/ui/Card.vue'
-import UiButton from '~/components/ui/Button.vue'
-import WorkoutList from '~/components/workouts/WorkoutList.vue'
 import type { Workout } from '~/types/workout'
 
 const loading = ref<boolean>(true)
@@ -52,12 +44,12 @@ const userId = 'user123'
 const fetchDashboardData = async () => {
   try {
     loading.value = true
-    
+
     // Fetch recent workouts
     const response: any = await $fetch('/api/workouts', {
       query: { userId, limit: 10 }
     })
-    
+
     recentWorkouts.value = response.workouts as Workout[]
     stats.value.totalWorkouts = recentWorkouts.value.length
     stats.value.thisWeekWorkouts = recentWorkouts.value.filter((w: Workout) => {
@@ -67,7 +59,7 @@ const fetchDashboardData = async () => {
       return workoutDate >= weekAgo
     }).length
     stats.value.totalExercises = recentWorkouts.value.reduce((total: number, workout: Workout) => total + workout.exercises.length, 0)
-    
+
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
   } finally {
@@ -77,13 +69,13 @@ const fetchDashboardData = async () => {
 
 const deleteWorkout = async (workoutId: string) => {
   if (!confirm('Are you sure you want to delete this workout?')) return
-  
+
   try {
     await $fetch(`/api/workouts/${workoutId}`, {
       method: 'DELETE',
       query: { userId }
     })
-    
+
     // Refresh data
     await fetchDashboardData()
   } catch (error) {

@@ -33,8 +33,6 @@
 </template>
 
 <script setup lang="ts">
-import UiCard from '~/components/ui/Card.vue'
-import UiButton from '~/components/ui/Button.vue'
 import SetRow from './SetRow.vue'
 import type { Exercise } from '~/types/exercise'
 
