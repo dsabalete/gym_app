@@ -28,6 +28,11 @@
           <p class="text-sm text-gray-500 mt-1">
             {{ workout.exercises.length }} exercises • {{ totalSets }} sets
           </p>
+          <div class="mt-4 flex items-center gap-2">
+            <input v-model="newExerciseName" type="text" placeholder="New exercise name"
+              class="border rounded px-3 py-2 w-64" />
+            <button @click="addExercise" class="btn-primary">Add Exercise</button>
+          </div>
         </div>
 
         <div class="space-y-4">
@@ -35,6 +40,7 @@
             <div class="flex justify-between items-center">
               <h3 class="text-lg font-medium text-gray-900">{{ exercise.name }}</h3>
               <span class="text-sm text-gray-500">{{ exercise.sets.length }} sets</span>
+              <button @click="removeExercise(exercise)" class="text-red-600 hover:text-red-700">Remove Exercise</button>
             </div>
             <div class="mt-4">
               <div class="overflow-x-auto">
@@ -88,6 +94,7 @@ const route = useRoute()
 const loading = ref(true)
 const error = ref('')
 const workout = ref(null)
+const newExerciseName = ref('')
 
 const userId = 'user123'
 
@@ -177,4 +184,38 @@ const removeSet = async (set) => {
 onMounted(() => {
   fetchWorkout()
 })
+
+const addExercise = async () => {
+  const name = newExerciseName.value.trim()
+  if (!name) {
+    alert('Please enter an exercise name')
+    return
+  }
+  try {
+    await $fetch(`/api/workouts/${workout.value.id}/exercises`, {
+      method: 'POST',
+      query: { userId },
+      body: { name }
+    })
+    newExerciseName.value = ''
+    await fetchWorkout()
+  } catch (err) {
+    console.error('Error adding exercise:', err)
+    alert('Failed to add exercise')
+  }
+}
+
+const removeExercise = async (exercise) => {
+  if (!confirm(`Remove exercise "${exercise.name}"? This will delete its sets.`)) return
+  try {
+    await $fetch(`/api/exercises/${exercise.id}`, {
+      method: 'DELETE',
+      query: { userId }
+    })
+    await fetchWorkout()
+  } catch (err) {
+    console.error('Error removing exercise:', err)
+    alert('Failed to remove exercise')
+  }
+}
 </script>
