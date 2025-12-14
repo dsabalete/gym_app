@@ -1,11 +1,12 @@
 <template>
-  <UiCard>
+  <UiCard class="exercises-exercise-item">
     <template #header>
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-medium text-gray-900">{{ exercise.name }}</h3>
         <div class="flex items-center gap-2">
           <span class="text-sm text-gray-500">{{ exercise.sets.length }} sets</span>
-          <button class="text-red-600 hover:text-red-700" @click="emit('remove-exercise', exercise)">Remove Exercise</button>
+          <button class="text-red-600 hover:text-red-700" @click="emit('remove-exercise', exercise)">Remove
+            Exercise</button>
         </div>
       </div>
     </template>
@@ -20,13 +21,8 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <SetRow
-            v-for="set in exercise.sets"
-            :key="set.id"
-            :set="set"
-            @save="s => emit('save-set', s)"
-            @remove="s => emit('remove-set', s)"
-          />
+          <SetRow v-for="set in exercise.sets" :key="set.id" :set="set" @save="s => emit('save-set', s)"
+            @remove="s => emit('remove-set', s)" />
         </tbody>
       </table>
     </div>

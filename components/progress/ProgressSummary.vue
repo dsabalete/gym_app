@@ -1,5 +1,5 @@
 <template>
-  <UiCard>
+  <UiCard class="ui-progress-summary">
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div>
         <h3 class="text-xs font-medium text-gray-600 dark:text-gray-200 mb-1">Total Workouts</h3>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-2">
+  <div class="exercises-exercise-editor flex items-center gap-2">
     <UiInput v-model="localName" placeholder="New exercise name" />
     <UiButton variant="primary" @click="submit">Add Exercise</UiButton>
   </div>

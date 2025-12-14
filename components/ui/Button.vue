@@ -1,5 +1,5 @@
 <template>
-  <button :type="type" :disabled="disabled || loading" :class="classes" @click="onClick">
+  <button :type="type" :disabled="disabled || loading" :class="classes" class="ui-button" @click="onClick">
     <span v-if="loading"
       class="mr-2 inline-block animate-spin rounded-full border-2 border-white/60 border-t-transparent h-4 w-4"></span>
     <slot />

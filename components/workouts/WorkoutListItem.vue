@@ -1,5 +1,5 @@
 <template>
-  <UiCard>
+  <UiCard class="workout-list-item">
     <template #header>
       <div class="flex justify-between items-start">
         <div>
@@ -16,17 +16,12 @@
       </div>
     </template>
     <div class="flex flex-wrap gap-2">
-      <span
-        v-for="exercise in workout.exercises.slice(0, 6)"
-        :key="exercise.id"
-        class="inline-block rounded-full bg-primary-50 text-primary-700 border border-primary-200 text-xs px-2 py-1"
-      >
+      <span v-for="exercise in workout.exercises.slice(0, 6)" :key="exercise.id"
+        class="inline-block rounded-full bg-primary-50 text-primary-700 border border-primary-200 text-xs px-2 py-1">
         {{ exercise.name }}
       </span>
-      <span
-        v-if="workout.exercises.length > 6"
-        class="inline-block rounded-full bg-gray-100 text-gray-700 border border-gray-200 text-xs px-2 py-1"
-      >
+      <span v-if="workout.exercises.length > 6"
+        class="inline-block rounded-full bg-gray-100 text-gray-700 border border-gray-200 text-xs px-2 py-1">
         +{{ workout.exercises.length - 6 }} more
       </span>
     </div>

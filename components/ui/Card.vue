@@ -1,5 +1,5 @@
 <template>
-  <div class="card">
+  <div class="ui-card">
     <div v-if="$slots.header" class="mb-4">
       <slot name="header" />
     </div>

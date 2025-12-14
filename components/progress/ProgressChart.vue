@@ -1,5 +1,5 @@
 <template>
-  <UiCard>
+  <UiCard class="ui-progress-chart">
     <h3 class="text-md font-medium text-gray-900 mb-4">Workouts Per Week</h3>
     <div class="grid grid-cols-7 gap-2">
       <div v-for="bar in bars" :key="bar.label">

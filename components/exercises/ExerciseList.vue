@@ -1,14 +1,8 @@
 <template>
-  <div class="space-y-4">
-    <ExerciseItem
-      v-for="ex in exercises"
-      :key="ex.id"
-      :exercise="ex"
-      @add-set="e => emit('add-set', e)"
-      @save-set="s => emit('save-set', s)"
-      @remove-set="s => emit('remove-set', s)"
-      @remove-exercise="e => emit('remove-exercise', e)"
-    />
+  <div class="exercises-exercise-list space-y-4">
+    <ExerciseItem v-for="ex in exercises" :key="ex.id" :exercise="ex" @add-set="e => emit('add-set', e)"
+      @save-set="s => emit('save-set', s)" @remove-set="s => emit('remove-set', s)"
+      @remove-exercise="e => emit('remove-exercise', e)" />
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <div :class="classes" role="alert">
+  <div :class="classes" class="ui-alert" role="alert">
     <div class="flex items-start">
       <div class="flex-1">
         <p v-if="title" class="font-medium">{{ title }}</p>
