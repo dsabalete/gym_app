@@ -36,13 +36,6 @@ functions:
           cors: true
     timeout: 30
 
-plugins:
-  - serverless-offline
-
-custom:
-  serverless-offline:
-    httpPort: 3000
-    
 package:
   exclude:
     - .nuxt/**
