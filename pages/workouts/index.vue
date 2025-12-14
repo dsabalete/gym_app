@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 py-6 sm:px-0">
+  <div class="page-workouts px-4 py-6 sm:px-0">
     <PageHeader title="Workouts">
       <template #actions>
         <NuxtLink to="/workouts/new">
