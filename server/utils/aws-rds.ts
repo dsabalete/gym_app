@@ -1,4 +1,4 @@
-import { RDSDataClient, ExecuteStatementCommand } from '@aws-sdk/client-rds-data'
+import { RDSDataClient, ExecuteStatementCommand, BeginTransactionCommand, CommitTransactionCommand, RollbackTransactionCommand } from '@aws-sdk/client-rds-data'
 
 export interface DatabaseConfig {
   region: string
@@ -26,7 +26,7 @@ export class AwsRdsClient {
     })
   }
 
-  async execute(sql: string, parameters: Record<string, any> | any[] = []): Promise<any> {
+  async execute(sql: string, parameters: Record<string, any> | any[] = [], transactionId?: string): Promise<any> {
     try {
       let formattedParams: any[] | undefined
       if (Array.isArray(parameters)) {
@@ -47,7 +47,8 @@ export class AwsRdsClient {
         database: this.config.database,
         sql,
         parameters: formattedParams,
-        includeResultMetadata: true
+        includeResultMetadata: true,
+        transactionId
       })
 
       const response = await this.client.send(command)
@@ -56,6 +57,34 @@ export class AwsRdsClient {
       console.error('Database execution error:', error)
       throw error
     }
+  }
+
+  async beginTransaction(): Promise<string> {
+    const cmd = new BeginTransactionCommand({
+      resourceArn: this.config.clusterArn,
+      secretArn: this.config.secretArn,
+      database: this.config.database
+    })
+    const res = await this.client.send(cmd)
+    return res.transactionId as string
+  }
+
+  async commitTransaction(transactionId: string): Promise<void> {
+    const cmd = new CommitTransactionCommand({
+      resourceArn: this.config.clusterArn,
+      secretArn: this.config.secretArn,
+      transactionId
+    })
+    await this.client.send(cmd)
+  }
+
+  async rollbackTransaction(transactionId: string): Promise<void> {
+    const cmd = new RollbackTransactionCommand({
+      resourceArn: this.config.clusterArn,
+      secretArn: this.config.secretArn,
+      transactionId
+    })
+    await this.client.send(cmd)
   }
 
   private formatParameter(value: any): any {

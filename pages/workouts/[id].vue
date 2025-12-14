@@ -47,17 +47,34 @@
                       </th>
                       <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Weight
                       </th>
+                      <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
                     <tr v-for="set in exercise.sets" :key="set.id">
-                      <td class="px-3 py-2 text-sm text-gray-900">{{ set.setNumber }}</td>
-                      <td class="px-3 py-2 text-sm text-gray-900">{{ set.reps }}</td>
-                      <td class="px-3 py-2 text-sm text-gray-900">{{ set.weight }}</td>
+                      <td class="px-3 py-2 text-sm text-gray-900">
+                        <input v-model.number="set.setNumber" type="number" min="1"
+                          class="w-16 border rounded px-2 py-1" />
+                      </td>
+                      <td class="px-3 py-2 text-sm text-gray-900">
+                        <input v-model.number="set.reps" type="number" min="1" class="w-20 border rounded px-2 py-1" />
+                      </td>
+                      <td class="px-3 py-2 text-sm text-gray-900">
+                        <input v-model.number="set.weight" type="number" step="0.5" min="0"
+                          class="w-24 border rounded px-2 py-1" />
+                      </td>
+                      <td class="px-3 py-2 text-sm text-gray-900">
+                        <button @click="saveSet(set)" class="btn-secondary mr-2">Save</button>
+                        <button @click="removeSet(set)" class="text-red-600 hover:text-red-700">Delete</button>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
+            </div>
+            <div class="mt-4">
+              <button @click="addSet(exercise)" class="btn-primary">Add Set</button>
             </div>
           </div>
         </div>
@@ -83,10 +100,12 @@ const fetchWorkout = async () => {
     })
     workout.value = response.workout
   } catch (err) {
-    console.error('Error fetching workout:', err)
     const status = err?.statusCode || err?.status
     const message = err?.statusMessage || err?.data?.statusMessage || 'Failed to load workout'
     error.value = status === 404 ? 'Workout not found' : message
+    if (status !== 404) {
+      console.error('Error fetching workout:', err)
+    }
     workout.value = null
   } finally {
     loading.value = false
@@ -108,6 +127,52 @@ const totalSets = computed(() => {
     return total + exercise.sets.length
   }, 0)
 })
+
+const addSet = async (exercise) => {
+  try {
+    await $fetch(`/api/exercises/${exercise.id}/sets`, {
+      method: 'POST',
+      query: { userId },
+      body: {}
+    })
+    await fetchWorkout()
+  } catch (err) {
+    console.error('Error adding set:', err)
+    alert('Failed to add set')
+  }
+}
+
+const saveSet = async (set) => {
+  try {
+    await $fetch(`/api/exercise-sets/${set.id}`, {
+      method: 'PATCH',
+      query: { userId },
+      body: {
+        setNumber: set.setNumber,
+        reps: set.reps,
+        weight: set.weight
+      }
+    })
+    await fetchWorkout()
+  } catch (err) {
+    console.error('Error saving set:', err)
+    alert('Failed to save set')
+  }
+}
+
+const removeSet = async (set) => {
+  if (!confirm('Delete this set?')) return
+  try {
+    await $fetch(`/api/exercise-sets/${set.id}`, {
+      method: 'DELETE',
+      query: { userId }
+    })
+    await fetchWorkout()
+  } catch (err) {
+    console.error('Error deleting set:', err)
+    alert('Failed to delete set')
+  }
+}
 
 onMounted(() => {
   fetchWorkout()

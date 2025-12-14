@@ -15,7 +15,7 @@ A modern web application for tracking gym workouts, built with Nuxt 4, Vue 3, Ta
 
 - **Frontend**: Nuxt 4, Vue 3, TailwindCSS
 - **Backend**: Nuxt server routes, AWS RDS Data API
-- **Database**: AWS Aurora Serverless v2 (PostgreSQL)
+- **Database**: AWS Aurora Serverless v2 (MySQL, via RDS Data API)
 - **Deployment**: AWS Lambda via Serverless Framework
 - **CI/CD**: GitHub Actions
 
@@ -84,15 +84,60 @@ The application uses AWS Aurora Serverless with the following schema:
 - **Indexes**: Optimized for common queries
 - **UUID Primary Keys**: Secure and scalable
 
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+USERS ||--o{ WORKOUTS : has
+WORKOUTS ||--o{ EXERCISES : contains
+EXERCISES ||--o{ EXERCISE_SETS : includes
+
+USERS {
+  VARCHAR id PK
+  VARCHAR email UNIQUE
+  VARCHAR name
+  TIMESTAMP created_at
+  TIMESTAMP updated_at
+}
+
+WORKOUTS {
+  VARCHAR id PK
+  VARCHAR user_id FK -> USERS.id
+  DATE date
+  TIMESTAMP created_at
+  TIMESTAMP updated_at
+}
+
+EXERCISES {
+  VARCHAR id PK
+  VARCHAR workout_id FK -> WORKOUTS.id
+  VARCHAR name
+  TIMESTAMP created_at
+}
+
+EXERCISE_SETS {
+  VARCHAR id PK
+  VARCHAR exercise_id FK -> EXERCISES.id
+  INT set_number
+  INT reps
+  DECIMAL(10,2) weight
+  TIMESTAMP created_at
+}
+```
+
 ## API Endpoints
 
 ### Workouts
-- `GET /api/workouts?userId=123` - Get user's workouts
-- `POST /api/workouts` - Create new workout
-- `DELETE /api/workouts/:id?userId=123` - Delete workout
+- `GET /api/workouts?userId=user123` - Get user's workouts
+- `GET /api/workouts/:id?userId=user123` - Get a workout by ID
+- `POST /api/workouts` - Create new workout (UUIDs generated in-app)
+- `DELETE /api/workouts/:id?userId=user123` - Delete workout
+  - Accepts a `workout.id`, `exercise.id`, or `exercise_sets.id`
+  - Resolves to the owning workout and deletes cascade-safe (FK constraints)
 
 ### Database
 - `POST /api/database/init` - Initialize database schema
+- `GET /api/health/db` - DB connectivity health check (runs `SELECT 1`)
 
 ## Deployment
 
@@ -187,6 +232,19 @@ const result = await client.execute(
 )
 ```
 
+### Transactions
+
+- Uses RDS Data API transaction commands instead of raw `BEGIN/COMMIT` SQL:
+  - `beginTransaction()`, `commitTransaction()`, `rollbackTransaction()`
+- Insert IDs are generated in-app using `crypto.randomUUID()` for MySQL compatibility (no `RETURNING`).
+
+### Development Auth
+
+- For local development, a mock `userId = 'user123'` is used across pages. Replace with real auth in production.
+
+### UI Details
+
+- Custom favicon: hexagonal dumbbell inclined ~30°, registered via `public/favicon.svg` and `nuxt.config.ts`.
 ## Security
 
 - **SQL Injection Protection**: All queries use parameterized statements
