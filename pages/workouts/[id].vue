@@ -82,7 +82,7 @@ const addSet = async (exercise: Exercise) => {
     await $fetch(`/api/exercises/${exercise.id}/sets`, {
       method: 'POST',
       query: { userId },
-      body: {}
+      body: { workoutId: workout.value?.id }
     })
     await fetchWorkout()
   } catch (err) {
