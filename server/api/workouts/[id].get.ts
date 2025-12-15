@@ -42,12 +42,20 @@ export default defineEventHandler(async (event) => {
     const workoutData = targetDoc.data() as any
     const workout: any = { id: targetDoc.id, ...workoutData, exercises: [] }
 
-    const exercisesSnap = await targetDoc.ref.collection('exercises').orderBy('id').get()
-    for (const exDoc of exercisesSnap.docs) {
-      const exData = exDoc.data()
-      const setsSnap = await exDoc.ref.collection('sets').orderBy('setNumber').get()
-      const sets = setsSnap.docs.map((s) => ({ id: s.id, ...s.data() }))
-      workout.exercises.push({ id: exDoc.id, ...exData, sets })
+    const exercisesSnap = await targetDoc.ref.collection('exercises').get()
+    const exerciseDocs = exercisesSnap.docs
+      .map((d) => ({ id: d.id, data: d.data(), ref: d.ref }))
+      .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+    for (const ex of exerciseDocs) {
+      const setsSnap = await ex.ref.collection('sets').get()
+      const sets = setsSnap.docs
+        .map((s) => ({ id: s.id, ...s.data() }))
+        .sort((a, b) => {
+          const an = Number((a as any).setNumber) || 0
+          const bn = Number((b as any).setNumber) || 0
+          return an - bn
+        })
+      workout.exercises.push({ id: ex.id, ...ex.data, sets })
     }
 
     return {

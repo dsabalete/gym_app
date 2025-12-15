@@ -22,7 +22,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <SetRow v-for="set in exercise.sets" :key="set.id" :set="set" @save="s => emit('save-set', { set: s, exerciseId: exercise.id })"
-            @remove="s => emit('remove-set', s)" />
+            @remove="s => emit('remove-set', { set: s, exerciseId: exercise.id })" />
         </tbody>
       </table>
     </div>

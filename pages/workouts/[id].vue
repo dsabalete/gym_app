@@ -130,12 +130,12 @@ const saveSet = async (payload: { set: ExerciseSet; exerciseId: string }) => {
   }
 }
 
-const removeSet = async (set: ExerciseSet) => {
+const removeSet = async (payload: { set: ExerciseSet; exerciseId: string }) => {
   if (!confirm('Delete this set?')) return
   try {
-    await $fetch(`/api/exercise-sets/${set.id}`, {
+    await $fetch(`/api/exercise-sets/${payload.set.id}`, {
       method: 'DELETE',
-      query: { userId }
+      query: { userId, workoutId: workout.value?.id, exerciseId: payload.exerciseId }
     })
     await fetchWorkout()
   } catch (err) {
@@ -172,7 +172,7 @@ const removeExercise = async (exercise: Exercise) => {
   try {
     await $fetch(`/api/exercises/${exercise.id}`, {
       method: 'DELETE',
-      query: { userId }
+      query: { userId, workoutId: workout.value?.id }
     })
     await fetchWorkout()
   } catch (err) {
