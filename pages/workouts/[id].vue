@@ -91,15 +91,18 @@ const addSet = async (exercise: Exercise) => {
   }
 }
 
-const saveSet = async (set: ExerciseSet) => {
+const saveSet = async (payload: { set: ExerciseSet; exerciseId: string }) => {
   try {
+    const { set, exerciseId } = payload
     await $fetch(`/api/exercise-sets/${set.id}`, {
       method: 'PATCH',
       query: { userId },
       body: {
         setNumber: set.setNumber,
         reps: set.reps,
-        weight: set.weight
+        weight: set.weight,
+        exerciseId,
+        workoutId: workout.value?.id
       }
     })
     await fetchWorkout()

@@ -21,7 +21,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <SetRow v-for="set in exercise.sets" :key="set.id" :set="set" @save="s => emit('save-set', s)"
+          <SetRow v-for="set in exercise.sets" :key="set.id" :set="set" @save="s => emit('save-set', { set: s, exerciseId: exercise.id })"
             @remove="s => emit('remove-set', s)" />
         </tbody>
       </table>
@@ -42,7 +42,7 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: 'add-set', exercise: Exercise): void
-  (e: 'save-set', set: any): void
+  (e: 'save-set', payload: { set: any; exerciseId: string }): void
   (e: 'remove-set', set: any): void
   (e: 'remove-exercise', exercise: Exercise): void
 }>()

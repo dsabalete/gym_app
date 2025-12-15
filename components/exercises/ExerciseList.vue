@@ -16,7 +16,7 @@ defineProps<{
 
 const emit = defineEmits<{
   (e: 'add-set', exercise: Exercise): void
-  (e: 'save-set', set: any): void
+  (e: 'save-set', payload: { set: any; exerciseId: string }): void
   (e: 'remove-set', set: any): void
   (e: 'remove-exercise', exercise: Exercise): void
 }>()
