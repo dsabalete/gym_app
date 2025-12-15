@@ -1,4 +1,4 @@
-import { createRdsClient } from '~/server/utils/aws-rds'
+import { getDb } from '~/server/utils/firestore'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -12,111 +12,42 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const client = createRdsClient()
+    const db = getDb()
+    let targetWorkoutRef: FirebaseFirestore.DocumentReference | null = null
 
-    let targetWorkoutId = workoutId
-
-    const wRes = await client.execute(
-      `SELECT id, user_id, date, created_at 
-       FROM workouts 
-       WHERE id = :id`,
-      { id: targetWorkoutId }
-    )
-
-    if (!wRes.records.length) {
-      const exRes = await client.execute(
-        `SELECT e.workout_id 
-         FROM exercises e 
-         WHERE e.id = :id`,
-        { id: targetWorkoutId }
-      )
-
-      if (!exRes.records.length) {
-        const setRes = await client.execute(
-          `SELECT es.exercise_id 
-           FROM exercise_sets es 
-           WHERE es.id = :id`,
-          { id: targetWorkoutId }
-        )
-
-        if (!setRes.records.length) {
-          throw createError({
-            statusCode: 404,
-            statusMessage: 'Workout not found'
-          })
-        }
-
-        const exerciseId = setRes.records[0].exercise_id
-        const exToW = await client.execute(
-          `SELECT workout_id FROM exercises WHERE id = :exerciseId`,
-          { exerciseId }
-        )
-        if (!exToW.records.length) {
-          throw createError({
-            statusCode: 404,
-            statusMessage: 'Workout not found'
-          })
-        }
-        targetWorkoutId = exToW.records[0].workout_id
+    const workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
+    const workoutDoc = await workoutRef.get()
+    if (workoutDoc.exists) {
+      targetWorkoutRef = workoutRef
+    } else {
+      const exSnap = await db.collectionGroup('exercises').where('id', '==', workoutId).limit(1).get()
+      if (!exSnap.empty) {
+        const exerciseDoc = exSnap.docs[0]
+        targetWorkoutRef = exerciseDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
       } else {
-        targetWorkoutId = exRes.records[0].workout_id
+        const setSnap = await db.collectionGroup('sets').where('id', '==', workoutId).limit(1).get()
+        if (setSnap.empty) {
+          throw createError({ statusCode: 404, statusMessage: 'Workout not found' })
+        }
+        const setDoc = setSnap.docs[0]
+        const exerciseRef = setDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
+        targetWorkoutRef = exerciseRef.parent.parent as FirebaseFirestore.DocumentReference
       }
     }
 
-    const workoutResult = await client.execute(
-      `SELECT id, date, created_at 
-       FROM workouts 
-       WHERE user_id = :userId AND id = :workoutId`,
-      { userId, workoutId: targetWorkoutId }
-    )
-
-    if (!workoutResult.records.length) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Workout not found'
-      })
+    const targetDoc = await targetWorkoutRef!.get()
+    if (!targetDoc.exists) {
+      throw createError({ statusCode: 404, statusMessage: 'Workout not found' })
     }
+    const workoutData = targetDoc.data() as any
+    const workout: any = { id: targetDoc.id, ...workoutData, exercises: [] }
 
-    const workoutRow = workoutResult.records[0]
-    const workout: any = {
-      id: workoutRow.id,
-      date: workoutRow.date,
-      createdAt: workoutRow.created_at,
-      exercises: []
-    }
-
-    const exercisesResult = await client.execute(
-      `SELECT id, name 
-       FROM exercises 
-       WHERE workout_id = :workoutId 
-       ORDER BY id`,
-      { workoutId: targetWorkoutId }
-    )
-
-    if (exercisesResult.records.length) {
-      for (const exRow of exercisesResult.records) {
-        const exercise = {
-          id: exRow.id,
-          name: exRow.name,
-          sets: []
-        }
-        const setsResult = await client.execute(
-          `SELECT id, set_number, reps, weight 
-           FROM exercise_sets 
-           WHERE exercise_id = :exerciseId 
-           ORDER BY set_number`,
-          { exerciseId: exRow.id }
-        )
-        if (setsResult.records.length) {
-          exercise.sets = setsResult.records.map((s: any) => ({
-            id: s.id,
-            setNumber: s.set_number,
-            reps: s.reps,
-            weight: s.weight
-          }))
-        }
-        workout.exercises.push(exercise)
-      }
+    const exercisesSnap = await targetDoc.ref.collection('exercises').orderBy('id').get()
+    for (const exDoc of exercisesSnap.docs) {
+      const exData = exDoc.data()
+      const setsSnap = await exDoc.ref.collection('sets').orderBy('setNumber').get()
+      const sets = setsSnap.docs.map((s) => ({ id: s.id, ...s.data() }))
+      workout.exercises.push({ id: exDoc.id, ...exData, sets })
     }
 
     return {

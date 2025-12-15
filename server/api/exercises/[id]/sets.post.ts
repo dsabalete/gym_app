@@ -1,4 +1,4 @@
-import { createRdsClient } from '~/server/utils/aws-rds'
+import { getDb, runTransaction } from '~/server/utils/firestore'
 import { randomUUID } from 'crypto'
 
 export default defineEventHandler(async (event) => {
@@ -14,49 +14,30 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Exercise ID and User ID are required' })
     }
 
-    const client = createRdsClient()
-    const txId = await client.beginTransaction()
-
-    try {
-      const exRes = await client.execute(
-        `SELECT e.id, w.user_id 
-         FROM exercises e 
-         JOIN workouts w ON w.id = e.workout_id 
-         WHERE e.id = :exerciseId AND w.user_id = :userId`,
-        { exerciseId, userId },
-        txId
-      )
-
-      if (!exRes.records.length) {
-        throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
-      }
-
-      const nextRes = await client.execute(
-        `SELECT COALESCE(MAX(set_number), 0) + 1 AS next 
-         FROM exercise_sets 
-         WHERE exercise_id = :exerciseId`,
-        { exerciseId },
-        txId
-      )
-
-      const nextNumber = nextRes.records?.[0]?.next ?? 1
-      const setNumber = Number.isFinite(Number(setNumberInput)) && Number(setNumberInput) > 0 ? Number(setNumberInput) : nextNumber
-
-      const setId = randomUUID()
-      await client.execute(
-        `INSERT INTO exercise_sets (id, exercise_id, set_number, reps, weight, created_at) 
-         VALUES (:id, :exerciseId, :setNumber, :reps, :weight, NOW())`,
-        { id: setId, exerciseId, setNumber, reps, weight },
-        txId
-      )
-
-      await client.commitTransaction(txId)
-
-      return { success: true, setId }
-    } catch (error) {
-      await client.rollbackTransaction(txId)
-      throw error
+    const db = getDb()
+    const exSnap = await db.collectionGroup('exercises').where('id', '==', exerciseId).limit(1).get()
+    if (exSnap.empty) {
+      throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
     }
+    const exerciseDoc = exSnap.docs[0]
+    const workoutRef = exerciseDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
+    const workoutDoc = await workoutRef.get()
+    const ownerId = (workoutDoc.data() as any)?.userId
+    if (ownerId !== userId) {
+      throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
+    }
+
+    const latestSnap = await exerciseDoc.ref.collection('sets').orderBy('setNumber', 'desc').limit(1).get()
+    const nextNumber = (latestSnap.docs[0]?.data()?.setNumber ?? 0) + 1
+    const setNumber = Number.isFinite(Number(setNumberInput)) && Number(setNumberInput) > 0 ? Number(setNumberInput) : nextNumber
+
+    const setId = randomUUID()
+    await runTransaction(async (tx) => {
+      const setRef = exerciseDoc.ref.collection('sets').doc(setId)
+      tx.set(setRef, { id: setId, setNumber, reps, weight, createdAt: new Date().toISOString() })
+    })
+
+    return { success: true, setId }
   } catch (error) {
     if ((error as any)?.statusCode === 404) {
       throw error

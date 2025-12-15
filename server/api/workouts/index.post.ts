@@ -1,4 +1,4 @@
-import { createRdsClient } from '~/server/utils/aws-rds'
+import { getDb, runTransaction } from '~/server/utils/firestore'
 import { randomUUID } from 'crypto'
 
 export default defineEventHandler(async (event) => {
@@ -13,48 +13,46 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const client = createRdsClient()
-    const txId = await client.beginTransaction()
+    const db = getDb()
+    const workoutId = randomUUID()
+    await runTransaction(async (tx) => {
+      const userRef = db.collection('users').doc(userId)
+      const workoutRef = userRef.collection('workouts').doc(workoutId)
 
-    try {
-      const workoutId = randomUUID()
-      await client.execute(
-        `INSERT INTO workouts (id, user_id, date, created_at, updated_at) 
-         VALUES (:workoutId, :userId, :date, NOW(), NOW())`,
-        { workoutId, userId, date },
-        txId
-      )
+      tx.set(workoutRef, {
+        id: workoutId,
+        userId,
+        date,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
 
-      // Insert exercises and sets
       for (const exercise of exercises) {
         const exerciseId = randomUUID()
-        await client.execute(
-          `INSERT INTO exercises (id, workout_id, name, created_at) 
-           VALUES (:exerciseId, :workoutId, :name, NOW())`,
-          { exerciseId, workoutId, name: exercise.name },
-          txId
-        )
+        const exerciseRef = workoutRef.collection('exercises').doc(exerciseId)
+        tx.set(exerciseRef, {
+          id: exerciseId,
+          name: exercise.name,
+          createdAt: new Date().toISOString()
+        })
 
         for (const set of exercise.sets) {
           const setId = randomUUID()
-          await client.execute(
-            `INSERT INTO exercise_sets (id, exercise_id, set_number, reps, weight, created_at) 
-             VALUES (:setId, :exerciseId, :setNumber, :reps, :weight, NOW())`,
-            { setId, exerciseId, setNumber: set.setNumber, reps: set.reps, weight: set.weight },
-            txId
-          )
+          const setRef = exerciseRef.collection('sets').doc(setId)
+          tx.set(setRef, {
+            id: setId,
+            setNumber: set.setNumber,
+            reps: set.reps,
+            weight: set.weight,
+            createdAt: new Date().toISOString()
+          })
         }
       }
+    })
 
-      await client.commitTransaction(txId)
-
-      return {
-        success: true,
-        workoutId
-      }
-    } catch (error) {
-      await client.rollbackTransaction(txId)
-      throw error
+    return {
+      success: true,
+      workoutId
     }
   } catch (error) {
     console.error('Error creating workout:', error)

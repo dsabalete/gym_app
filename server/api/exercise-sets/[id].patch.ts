@@ -1,4 +1,4 @@
-import { createRdsClient } from '~/server/utils/aws-rds'
+import { getDb } from '~/server/utils/firestore'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -19,27 +19,20 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'No fields to update' })
     }
 
-    const client = createRdsClient()
-
-    const verifyRes = await client.execute(
-      `SELECT es.id 
-       FROM exercise_sets es
-       JOIN exercises e ON e.id = es.exercise_id
-       JOIN workouts w ON w.id = e.workout_id
-       WHERE es.id = :setId AND w.user_id = :userId`,
-      { setId, userId }
-    )
-
-    if (!verifyRes.records.length) {
+    const db = getDb()
+    const setSnap = await db.collectionGroup('sets').where('id', '==', setId).limit(1).get()
+    if (setSnap.empty) {
       throw createError({ statusCode: 404, statusMessage: 'Set not found' })
     }
-
-    const setClauses = Object.keys(fields).map((k) => `${k} = :${k}`).join(', ')
-    await client.execute(
-      `UPDATE exercise_sets SET ${setClauses} WHERE id = :id`,
-      { ...fields, id: setId }
-    )
-
+    const setDoc = setSnap.docs[0]
+    const exerciseRef = setDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
+    const workoutRef = exerciseRef.parent.parent as FirebaseFirestore.DocumentReference
+    const workoutDoc = await workoutRef.get()
+    const ownerId = (workoutDoc.data() as any)?.userId
+    if (ownerId !== userId) {
+      throw createError({ statusCode: 404, statusMessage: 'Set not found' })
+    }
+    await setDoc.ref.update(fields)
     return { success: true }
   } catch (error) {
     if ((error as any)?.statusCode === 404 || (error as any)?.statusCode === 400) {

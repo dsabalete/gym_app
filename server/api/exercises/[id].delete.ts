@@ -1,4 +1,4 @@
-import { createRdsClient } from '~/server/utils/aws-rds'
+import { getDb } from '~/server/utils/firestore'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -9,23 +9,26 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'Exercise ID and User ID are required' })
     }
 
-    const client = createRdsClient()
-
-    const verify = await client.execute(
-      `SELECT e.id 
-       FROM exercises e 
-       JOIN workouts w ON w.id = e.workout_id 
-       WHERE e.id = :id AND w.user_id = :userId`,
-      { id: exerciseId, userId }
-    )
-    if (!verify.records.length) {
+    const db = getDb()
+    const exSnap = await db.collectionGroup('exercises').where('id', '==', exerciseId).limit(1).get()
+    if (exSnap.empty) {
+      throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
+    }
+    const exerciseDoc = exSnap.docs[0]
+    const workoutRef = exerciseDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
+    const workoutDoc = await workoutRef.get()
+    const ownerId = (workoutDoc.data() as any)?.userId
+    if (ownerId !== userId) {
       throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
     }
 
-    await client.execute(
-      `DELETE FROM exercises WHERE id = :id`,
-      { id: exerciseId }
-    )
+    const batch = db.batch()
+    const setsSnap = await exerciseDoc.ref.collection('sets').get()
+    for (const setDoc of setsSnap.docs) {
+      batch.delete(setDoc.ref)
+    }
+    batch.delete(exerciseDoc.ref)
+    await batch.commit()
 
     return { success: true }
   } catch (error) {

@@ -1,4 +1,4 @@
-import { createRdsClient } from '~/server/utils/aws-rds'
+import { getDb, runTransaction } from '~/server/utils/firestore'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -32,44 +32,33 @@ export default defineEventHandler(async (event) => {
     }
   ]
 
-  const client = createRdsClient()
-  await client.execute('BEGIN')
+  const db = getDb()
   try {
-    await client.execute(
-      'INSERT INTO users (id, email, name, created_at, updated_at) VALUES (:id, :email, :name, NOW(), NOW()) ON DUPLICATE KEY UPDATE name = VALUES(name), updated_at = NOW()',
-      { id: userId, email, name }
-    )
+    let workoutId: string = ''
+    await runTransaction(async (tx) => {
+      const userRef = db.collection('users').doc(userId)
+      tx.set(userRef, { id: userId, email, name, updatedAt: new Date().toISOString() }, { merge: true })
 
-    const workoutId = crypto.randomUUID()
-    await client.execute(
-      'INSERT INTO workouts (id, user_id, date, created_at, updated_at) VALUES (:id, :userId, :date, NOW(), NOW())',
-      { id: workoutId, userId, date }
-    )
+      workoutId = crypto.randomUUID()
+      const workoutRef = userRef.collection('workouts').doc(workoutId)
+      tx.set(workoutRef, { id: workoutId, userId, date, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() })
 
-    for (const ex of exercises) {
-      const exerciseId = crypto.randomUUID()
-      await client.execute(
-        'INSERT INTO exercises (id, workout_id, name, created_at) VALUES (:id, :workoutId, :name, NOW())',
-        { id: exerciseId, workoutId, name: ex.name }
-      )
-
-      for (const set of ex.sets) {
-        await client.execute(
-          'INSERT INTO exercise_sets (exercise_id, set_number, reps, weight, created_at) VALUES (:exerciseId, :setNumber, :reps, :weight, NOW())',
-          { exerciseId, setNumber: set.setNumber, reps: set.reps, weight: set.weight }
-        )
+      for (const ex of exercises) {
+        const exerciseId = crypto.randomUUID()
+        const exerciseRef = workoutRef.collection('exercises').doc(exerciseId)
+        tx.set(exerciseRef, { id: exerciseId, name: ex.name, createdAt: new Date().toISOString() })
+        for (const set of ex.sets) {
+          const setId = crypto.randomUUID()
+          const setRef = exerciseRef.collection('sets').doc(setId)
+          tx.set(setRef, { id: setId, setNumber: set.setNumber, reps: set.reps, weight: set.weight, createdAt: new Date().toISOString() })
+        }
       }
-    }
-
-    await client.execute('COMMIT')
-    return {
-      success: true,
-      userId,
-      workoutId,
-      exercisesCount: exercises.length
-    }
+    })
+    return { success: true, userId, workoutId, exercisesCount: exercises.length }
   } catch (e) {
-    await client.execute('ROLLBACK')
-    throw createError({ statusCode: 500, statusMessage: 'Internal server error' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: process.env.NODE_ENV === 'production' ? 'Internal server error' : (e as any)?.message || 'Internal server error'
+    })
   }
 })

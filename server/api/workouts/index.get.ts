@@ -1,4 +1,4 @@
-import { createRdsClient } from '~/server/utils/aws-rds'
+import { getDb } from '~/server/utils/firestore'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -14,79 +14,47 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const client = createRdsClient()
-
+    const db = getDb()
     const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(limit, 100) : 50
     const safeOffset = Number.isFinite(offset) && offset >= 0 ? offset : 0
 
-    const result = await client.execute(
-      `SELECT 
-         w.id, w.date, w.created_at,
-         e.id as exercise_id, e.name as exercise_name,
-         es.id as set_id, es.set_number, es.reps, es.weight
-       FROM workouts w
-       LEFT JOIN exercises e ON w.id = e.workout_id
-       LEFT JOIN exercise_sets es ON e.id = es.exercise_id
-       WHERE w.user_id = :userId
-       ORDER BY w.date DESC, e.id, es.set_number
-       LIMIT ${safeLimit} OFFSET ${safeOffset}`,
-      { userId }
-    )
+    const userRef = db.collection('users').doc(userId)
+    const workoutsQuery = userRef
+      .collection('workouts')
+      .orderBy('date', 'desc')
+      .limit(safeLimit)
+      .offset(safeOffset)
 
-    // Group the results by workout and exercise
-    const workouts = new Map()
+    const workoutSnaps = await workoutsQuery.get()
+    const workouts: any[] = []
 
-    result.records.forEach((row: any) => {
-      const workoutId = row.id
-
-      if (!workouts.has(workoutId)) {
-        workouts.set(workoutId, {
-          id: workoutId,
-          date: row.date,
-          createdAt: row.created_at,
-          exercises: []
-        })
+    for (const workoutDoc of workoutSnaps.docs) {
+      const workoutData = workoutDoc.data()
+      const exercisesSnap = await workoutDoc.ref.collection('exercises').get()
+      const exercises: any[] = []
+      for (const exerciseDoc of exercisesSnap.docs) {
+        const exerciseData = exerciseDoc.data()
+        const setsSnap = await exerciseDoc.ref.collection('sets').orderBy('setNumber').get()
+        const sets = setsSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
+        exercises.push({ id: exerciseDoc.id, ...exerciseData, sets })
       }
-
-      const workout = workouts.get(workoutId)
-
-      if (row.exercise_id) {
-        let exercise = workout.exercises.find((e: any) => e.id === row.exercise_id)
-
-        if (!exercise) {
-          exercise = {
-            id: row.exercise_id,
-            name: row.exercise_name,
-            sets: []
-          }
-          workout.exercises.push(exercise)
-        }
-
-        if (row.set_id) {
-          exercise.sets.push({
-            id: row.set_id,
-            setNumber: row.set_number,
-            reps: row.reps,
-            weight: row.weight
-          })
-        }
-      }
-    })
+      workouts.push({ id: workoutDoc.id, ...workoutData, exercises })
+    }
 
     return {
       success: true,
-      workouts: Array.from(workouts.values()),
+      workouts,
       pagination: {
         limit,
         offset,
-        total: workouts.size
+        total: workouts.length
       }
     }
   } catch (error) {
     console.error('Error fetching workouts:', error)
     throw createError({
       statusCode: 500,
-      statusMessage: 'Internal server error'
+      statusMessage: process.env.NODE_ENV === 'production' ? 'Internal server error' : (error as any)?.message || 'Internal server error'
     })
   }
 })

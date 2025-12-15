@@ -1,10 +1,12 @@
-import { createRdsClient } from '~/server/utils/aws-rds'
+import { getDb } from '~/server/utils/firestore'
 
 export default defineEventHandler(async () => {
   try {
-    const client = createRdsClient()
-    const res = await client.execute('SELECT 1 as ok')
-    return { ok: true, result: res.records?.[0]?.ok === 1 || res.records?.[0]?.ok === '1' }
+    const db = getDb()
+    const docRef = db.collection('__health').doc('probe')
+    await docRef.set({ ts: Date.now() }, { merge: true })
+    const snap = await docRef.get()
+    return { ok: true, result: snap.exists }
   } catch (error) {
     console.error('DB health check failed:', error)
     throw createError({

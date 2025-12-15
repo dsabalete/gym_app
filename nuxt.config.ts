@@ -14,15 +14,10 @@ export default defineNuxtConfig({
   ],
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
-    aws: {
-      region: process.env.AWS_REGION || 'us-east-1',
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      rds: {
-        clusterArn: process.env.RDS_CLUSTER_ARN,
-        secretArn: process.env.RDS_SECRET_ARN,
-        database: process.env.RDS_DATABASE_NAME || 'gym_tracker'
-      }
+    firebase: {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY
     },
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '/api'
