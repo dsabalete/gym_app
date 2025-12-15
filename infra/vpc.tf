@@ -21,36 +21,3 @@ resource "aws_subnet" "private" {
     Name = "${var.project_name}-private-${count.index}"
   }
 }
-
-resource "aws_db_subnet_group" "rds" {
-  name       = "${var.project_name}-rds-subnets"
-  subnet_ids = aws_subnet.private[*].id
-  tags = {
-    Name = "${var.project_name}-rds-subnets"
-  }
-}
-
-resource "aws_security_group" "rds" {
-  name        = "${var.project_name}-rds-sg"
-  description = "RDS security group"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.project_name}-rds-sg"
-  }
-}
-
