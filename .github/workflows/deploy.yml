@@ -13,6 +13,11 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
       - uses: actions/checkout@v4
@@ -37,27 +42,30 @@ jobs:
           terraform_wrapper: false
 
       - name: Configure AWS credentials (OIDC)
-        if: ${{ secrets.AWS_ROLE_TO_ASSUME != '' }}
+        if: ${{ env.AWS_ROLE_TO_ASSUME != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: us-east-1
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Configure AWS credentials (Access Keys)
-        if: ${{ secrets.AWS_ROLE_TO_ASSUME == '' }}
+        if: ${{ env.AWS_ROLE_TO_ASSUME == '' && env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Init
+        if: ${{ env.AWS_ROLE_TO_ASSUME != '' || (env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '') }}
         run: terraform -chdir=infra init -input=false
 
       - name: Terraform Validate
+        if: ${{ env.AWS_ROLE_TO_ASSUME != '' || (env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '') }}
         run: terraform -chdir=infra validate
 
       - name: Terraform Plan
+        if: ${{ env.AWS_ROLE_TO_ASSUME != '' || (env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '') }}
         env:
           PROJECT_NAME: gym-app
         run: |
@@ -65,12 +73,15 @@ jobs:
             -var "project_name=${PROJECT_NAME}"
 
       - name: Terraform Apply
+        if: ${{ env.AWS_ROLE_TO_ASSUME != '' || (env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '') }}
         run: terraform -chdir=infra apply -input=false -auto-approve tfplan
 
       - name: Export Terraform Outputs
+        if: ${{ env.AWS_ROLE_TO_ASSUME != '' || (env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '') }}
         run: terraform -chdir=infra output -json > terraform-outputs.json
 
       - name: Upload Terraform Outputs
+        if: ${{ env.AWS_ROLE_TO_ASSUME != '' || (env.AWS_ACCESS_KEY_ID != '' && env.AWS_SECRET_ACCESS_KEY != '') }}
         uses: actions/upload-artifact@v4
         with:
           name: terraform-outputs
