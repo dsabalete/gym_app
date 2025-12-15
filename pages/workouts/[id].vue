@@ -17,9 +17,10 @@
     </UiCard>
     <div v-else class="space-y-6">
       <UiCard>
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-300">
-          {{ formatDate(workout.date) }}
-        </h2>
+        <div class="flex items-center gap-3">
+          <UiInput v-model="editableDate" type="date" class="w-44" />
+          <UiButton variant="primary" @click="updateDate">Save</UiButton>
+        </div>
         <p class="text-sm text-gray-500 mt-1">
           {{ workout.exercises.length }} exercises • {{ totalSets }} sets
         </p>
@@ -44,6 +45,7 @@ const loading = ref<boolean>(true)
 const error = ref<string>('')
 const workout = ref<Workout | null>(null)
 const newExerciseName = ref<string>('')
+const editableDate = ref<string>('')
 
 const userId = 'user123'
 
@@ -55,6 +57,7 @@ const fetchWorkout = async () => {
       query: { userId }
     })
     workout.value = response.workout
+    editableDate.value = workout.value?.date || ''
   } catch (err: any) {
     const status = err?.statusCode || err?.status
     const message = err?.statusMessage || err?.data?.statusMessage || 'Failed to load workout'
@@ -76,6 +79,21 @@ const totalSets = computed(() => {
     return total + exercise.sets.length
   }, 0)
 })
+
+const updateDate = async () => {
+  if (!workout.value || !editableDate.value) return
+  try {
+    await $fetch(`/api/workouts/${workout.value.id}`, {
+      method: 'PATCH',
+      query: { userId },
+      body: { date: editableDate.value }
+    })
+    await fetchWorkout()
+  } catch (err) {
+    console.error('Error updating date:', err)
+    alert('Failed to update date')
+  }
+}
 
 const addSet = async (exercise: Exercise) => {
   try {
