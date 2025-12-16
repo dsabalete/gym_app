@@ -87,14 +87,14 @@
 </template>
 
 <script setup lang="ts">
+import { useWorkouts } from '~/composables/useWorkouts'
 const loading = ref<boolean>(false)
 const workout = ref<{ date: string; exercises: Array<{ id: number; name: string; sets: Array<{ id: number; setNumber: number; reps: number; weight: number }> }> }>({
   date: '',
   exercises: []
 })
 
-// Mock user ID - in real app, this would come from auth
-const userId = 'user123'
+const { uid, ready } = useAuth()
 
 const addExercise = () => {
   workout.value.exercises.push({
@@ -160,26 +160,21 @@ const saveWorkout = async () => {
 
   try {
     loading.value = true
-
-    const response: any = await $fetch('/api/workouts', {
-      method: 'POST',
-      body: {
-        userId,
-        date: workout.value.date,
-        exercises: workout.value.exercises.map(exercise => ({
-          name: exercise.name,
-          sets: exercise.sets.map(set => ({
-            setNumber: set.setNumber,
-            reps: set.reps,
-            weight: set.weight
-          }))
+    const { create } = useWorkouts()
+    await ready
+    if (!uid.value) throw new Error('No authenticated user')
+    const newId = await create(uid.value, {
+      date: workout.value.date,
+      exercises: workout.value.exercises.map(exercise => ({
+        name: exercise.name,
+        sets: exercise.sets.map(set => ({
+          setNumber: set.setNumber,
+          reps: set.reps,
+          weight: set.weight
         }))
-      }
+      }))
     })
-
-    if (response.success) {
-      await navigateTo(`/workouts/${response.workoutId}`)
-    }
+    await navigateTo(`/workouts/${newId}`)
   } catch (error) {
     console.error('Error saving workout:', error)
     alert('Failed to save workout. Please try again.')

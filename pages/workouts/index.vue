@@ -13,18 +13,18 @@
 <script setup lang="ts">
 import type { Workout } from '~/types/workout'
 
+const { workouts, list, remove } = useWorkouts()
+const { uid, ready } = useAuth()
 const loading = ref<boolean>(true)
-const workouts = ref<Workout[]>([])
-
-const userId = 'user123'
 
 const fetchWorkouts = async () => {
   try {
     loading.value = true
-    const response = await $fetch('/api/workouts', {
-      query: { userId, limit: 100 }
-    })
-    workouts.value = response.workouts
+    await ready
+    if (!uid.value) {
+      throw new Error('No authenticated user')
+    }
+    await list(uid.value, 100)
   } catch (error) {
     console.error('Error fetching workouts:', error)
   } finally {
@@ -35,10 +35,9 @@ const fetchWorkouts = async () => {
 const deleteWorkout = async (workoutId: string) => {
   if (!confirm('Are you sure you want to delete this workout?')) return
   try {
-    await $fetch(`/api/workouts/${workoutId}`, {
-      method: 'DELETE',
-      query: { userId }
-    })
+    await ready
+    if (!uid.value) return
+    await remove(workoutId, uid.value)
     await fetchWorkouts()
   } catch (error) {
     console.error('Error deleting workout:', error)

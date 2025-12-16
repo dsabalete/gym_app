@@ -1,6 +1,6 @@
 <template>
   <div class="px-4 py-6 sm:px-0">
-    <PageHeader title="Progress" />
+    <LayoutPageHeader title="Progress" />
     <ProgressSummary :workouts="workouts" />
     <ClientOnly>
       <ProgressChart :workouts="workouts" />
@@ -9,8 +9,12 @@
 </template>
 <script setup lang="ts">
 const { workouts, list } = useWorkouts()
-const userId = 'user123'
-onMounted(() => {
-  list(userId, 100)
+const { uid, ready } = useAuth()
+
+onMounted(async () => {
+  await ready
+  if (uid.value) {
+    list(uid.value, 100)
+  }
 })
 </script>
