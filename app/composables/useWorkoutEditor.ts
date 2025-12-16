@@ -29,8 +29,25 @@ export function useWorkoutEditor() {
 
   async function removeSet(userId: string, workoutId: string, exerciseId: string, setId: string) {
     const db = getDbClient()
-    const setRef = doc(db, 'users', userId, 'workouts', workoutId, 'exercises', exerciseId, 'sets', setId)
+    const exRef = doc(db, 'users', userId, 'workouts', workoutId, 'exercises', exerciseId)
+    const setRef = doc(exRef, 'sets', setId)
+
+    // Delete the set first
     await deleteDoc(setRef)
+
+    // Reorder remaining sets
+    const setsSnap = await getDocs(query(collection(exRef, 'sets'), orderBy('setNumber')))
+    let currentNumber = 1
+    const updates = []
+
+    for (const docSnapshot of setsSnap.docs) {
+      if (docSnapshot.data().setNumber !== currentNumber) {
+        updates.push(updateDoc(docSnapshot.ref, { setNumber: currentNumber }))
+      }
+      currentNumber++
+    }
+
+    await Promise.all(updates)
   }
 
   async function removeExercise(userId: string, workoutId: string, exerciseId: string) {
