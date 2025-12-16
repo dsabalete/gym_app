@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { formatDateUTC } from '~/utils/date'
-import type { Workout } from '~/types/workout'
+import type { Workout } from '~~/types/workout'
 
 const props = defineProps<{
   workout: Workout

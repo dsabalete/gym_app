@@ -11,7 +11,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { Workout } from '~/types/workout'
+import type { Workout } from '~~/types/workout'
 
 const { workouts, list, remove } = useWorkouts()
 const { uid, ready } = useAuth()

@@ -35,8 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Workout } from '~/types/workout'
-import type { Exercise, ExerciseSet } from '~/types/exercise'
+import type { Workout } from '~~/types/workout'
+import type { Exercise, ExerciseSet } from '~~/types/exercise'
 import { formatDateUTC } from '~/utils/date'
 import { useWorkouts } from '~/composables/useWorkouts'
 import { useWorkoutEditor } from '~/composables/useWorkoutEditor'

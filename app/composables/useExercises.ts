@@ -1,4 +1,4 @@
-import type { ExerciseSet } from '~/types/exercise'
+import type { ExerciseSet } from '~~/types/exercise'
 
 export function useExercises() {
   const { post, del, patch } = useApi()

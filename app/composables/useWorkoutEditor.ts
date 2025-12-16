@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore'
 import { getDbClient } from '~/utils/firebaseClient'
-import type { ExerciseSet } from '~/types/exercise'
+import type { ExerciseSet } from '~~/types/exercise'
 
 export function useWorkoutEditor() {
   async function updateDate(userId: string, workoutId: string, date: string) {

@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ExerciseSet } from '~/types/exercise'
+import type { ExerciseSet } from '~~/types/exercise'
 
 const props = defineProps<{
   set: ExerciseSet

@@ -1,8 +1,8 @@
 import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, orderBy, limit as limitFn, query, updateDoc } from 'firebase/firestore'
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore'
 import { getDbClient } from '~/utils/firebaseClient'
-import type { Workout } from '~/types/workout'
-import type { Exercise, ExerciseSet } from '~/types/exercise'
+import type { Workout } from '~~/types/workout'
+import type { Exercise, ExerciseSet } from '~~/types/exercise'
 
 export function useWorkouts() {
   const workouts = ref<Workout[]>([])

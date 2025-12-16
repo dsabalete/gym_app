@@ -21,7 +21,8 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <SetRow v-for="set in exercise.sets" :key="set.id" :set="set" @save="s => emit('save-set', { set: s, exerciseId: exercise.id })"
+          <SetRow v-for="set in exercise.sets" :key="set.id" :set="set"
+            @save="s => emit('save-set', { set: s, exerciseId: exercise.id })"
             @remove="s => emit('remove-set', { set: s, exerciseId: exercise.id })" />
         </tbody>
       </table>
@@ -34,7 +35,7 @@
 
 <script setup lang="ts">
 import SetRow from './SetRow.vue'
-import type { Exercise } from '~/types/exercise'
+import type { Exercise } from '~~/types/exercise'
 
 defineProps<{
   exercise: Exercise

@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import ExerciseItem from './ExerciseItem.vue'
-import type { Exercise } from '~/types/exercise'
+import type { Exercise } from '~~/types/exercise'
 
 defineProps<{
   exercises: Exercise[]

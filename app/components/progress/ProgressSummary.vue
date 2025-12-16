@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Workout } from '~/types/workout'
+import type { Workout } from '~~/types/workout'
 
 const props = defineProps<{
   workouts: Workout[]
