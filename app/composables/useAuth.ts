@@ -13,6 +13,8 @@ const userRef = ref<User | null>(null)
 const initialLoadPromise = ref<Promise<void> | null>(null)
 
 async function initAuth() {
+  if (process.server) return
+
   // Ensure app is initialized
   getDbClient()
   const auth = getAuth()
