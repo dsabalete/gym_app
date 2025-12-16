@@ -50,7 +50,7 @@
               No sets added yet.
             </div>
 
-            <div v-for="(set, setIndex) in exercise.sets" :key="set.id" class="grid grid-cols-3 gap-3 items-end">
+            <div v-for="(set, setIndex) in exercise.sets" :key="set.id" class="grid grid-cols-4 gap-3 items-end">
               <div>
                 <label class="block text-xs text-gray-600 mb-1">
                   Set #
@@ -65,7 +65,10 @@
 
               <div>
                 <UiInput :id="`weight-${exerciseIndex}-${setIndex}`" v-model.number="set.weight" type="number"
-                  label="Weight (lbs)" />
+                  label="Weight" />
+              </div>
+
+              <div>
                 <UiButton type="button" variant="secondary" class="ml-2" @click="removeSet(exerciseIndex, setIndex)">
                   Remove
                 </UiButton>
