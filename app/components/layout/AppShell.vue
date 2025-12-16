@@ -17,7 +17,12 @@
               <UiThemeToggle />
               <div v-if="user" class="flex items-center ml-4 space-x-3">
                 <span class="text-sm text-gray-700 dark:text-gray-300">{{ user.displayName || user.email }}</span>
-                <img v-if="user.photoURL" :src="user.photoURL" alt="User avatar" class="h-8 w-8 rounded-full">
+                <img v-if="user.photoURL" :src="user.photoURL" alt="User avatar" class="h-8 w-8 rounded-full"
+                  referrerpolicy="no-referrer">
+                <div v-else class="h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                  <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ (user.displayName || user.email
+                    || 'U').charAt(0).toUpperCase() }}</span>
+                </div>
                 <button @click="handleLogout"
                   class="text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
                   Logout
@@ -60,8 +65,13 @@
           <div v-if="user" class="pt-4 border-t border-gray-200 dark:border-gray-700">
             <div class="flex items-center px-3 mb-3">
               <div class="flex-shrink-0">
-                <img v-if="user.photoURL" :src="user.photoURL" alt="User avatar" class="h-10 w-10 rounded-full">
-                <div v-else class="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+                <img v-if="user.photoURL" :src="user.photoURL" alt="User avatar" class="h-10 w-10 rounded-full"
+                  referrerpolicy="no-referrer">
+                <div v-else
+                  class="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                  <span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ (user.displayName || user.email
+                    || 'U').charAt(0).toUpperCase() }}</span>
+                </div>
               </div>
               <div class="ml-3">
                 <div class="text-base font-medium text-gray-800 dark:text-white">{{ user.displayName || 'User' }}</div>
