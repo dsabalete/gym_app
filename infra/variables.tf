@@ -16,3 +16,9 @@ variable "az_count" {
   type    = number
   default = 2
 }
+
+variable "enable_static_hosting" {
+  type    = bool
+  default = true
+  description = "Enable provisioning of S3+CloudFront for static hosting"
+}
