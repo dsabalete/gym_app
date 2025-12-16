@@ -15,6 +15,7 @@ export function getDbClient(): Firestore {
         messagingSenderId: c?.messagingSenderId,
         appId: c?.appId
     })
+    if (!app) throw new Error('Failed to initialize Firebase app')
     db = getFirestore(app)
     return db
 }
