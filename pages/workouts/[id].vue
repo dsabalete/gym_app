@@ -38,6 +38,9 @@
 import type { Workout } from '~/types/workout'
 import type { Exercise, ExerciseSet } from '~/types/exercise'
 import { formatDateUTC } from '~/utils/date'
+import { useWorkouts } from '~/composables/useWorkouts'
+import { useWorkoutEditor } from '~/composables/useWorkoutEditor'
+import { useAuth } from '~/composables/useAuth'
 
 const route = useRoute()
 
@@ -47,16 +50,18 @@ const workout = ref<Workout | null>(null)
 const newExerciseName = ref<string>('')
 const editableDate = ref<string>('')
 
-const userId = 'user123'
+const { uid, ready } = useAuth()
+const { getById, workout: apiWorkout, updateDate: updateWorkoutDate } = useWorkouts()
+const editor = useWorkoutEditor()
 
 const fetchWorkout = async () => {
   try {
     loading.value = true
     error.value = ''
-    const response: any = await $fetch(`/api/workouts/${route.params.id}`, {
-      query: { userId }
-    })
-    workout.value = response.workout
+    await ready
+    if (!uid.value) throw new Error('No authenticated user')
+    await getById(String(route.params.id), uid.value)
+    workout.value = apiWorkout.value
     editableDate.value = workout.value?.date || ''
   } catch (err: any) {
     const status = err?.statusCode || err?.status
@@ -83,11 +88,9 @@ const totalSets = computed(() => {
 const updateDate = async () => {
   if (!workout.value || !editableDate.value) return
   try {
-    await $fetch(`/api/workouts/${workout.value.id}`, {
-      method: 'PATCH',
-      query: { userId },
-      body: { date: editableDate.value }
-    })
+    await ready
+    if (!uid.value) return
+    await updateWorkoutDate(uid.value, workout.value.id, editableDate.value)
     await fetchWorkout()
   } catch (err) {
     console.error('Error updating date:', err)
@@ -97,11 +100,10 @@ const updateDate = async () => {
 
 const addSet = async (exercise: Exercise) => {
   try {
-    await $fetch(`/api/exercises/${exercise.id}/sets`, {
-      method: 'POST',
-      query: { userId },
-      body: { workoutId: workout.value?.id }
-    })
+    if (!workout.value) return
+    await ready
+    if (!uid.value) return
+    await editor.addSet(uid.value, workout.value.id, exercise.id)
     await fetchWorkout()
   } catch (err) {
     console.error('Error adding set:', err)
@@ -112,17 +114,10 @@ const addSet = async (exercise: Exercise) => {
 const saveSet = async (payload: { set: ExerciseSet; exerciseId: string }) => {
   try {
     const { set, exerciseId } = payload
-    await $fetch(`/api/exercise-sets/${set.id}`, {
-      method: 'PATCH',
-      query: { userId },
-      body: {
-        setNumber: set.setNumber,
-        reps: set.reps,
-        weight: set.weight,
-        exerciseId,
-        workoutId: workout.value?.id
-      }
-    })
+    if (!workout.value) return
+    await ready
+    if (!uid.value) return
+    await editor.saveSet(uid.value, workout.value.id, exerciseId, set)
     await fetchWorkout()
   } catch (err) {
     console.error('Error saving set:', err)
@@ -133,10 +128,10 @@ const saveSet = async (payload: { set: ExerciseSet; exerciseId: string }) => {
 const removeSet = async (payload: { set: ExerciseSet; exerciseId: string }) => {
   if (!confirm('Delete this set?')) return
   try {
-    await $fetch(`/api/exercise-sets/${payload.set.id}`, {
-      method: 'DELETE',
-      query: { userId, workoutId: workout.value?.id, exerciseId: payload.exerciseId }
-    })
+    if (!workout.value) return
+    await ready
+    if (!uid.value) return
+    await editor.removeSet(uid.value, workout.value.id, payload.exerciseId, payload.set.id)
     await fetchWorkout()
   } catch (err) {
     console.error('Error deleting set:', err)
@@ -155,11 +150,9 @@ const onAddExercise = async (name: string) => {
   }
   try {
     if (!workout.value) return
-    await $fetch(`/api/workouts/${workout.value.id}/exercises`, {
-      method: 'POST',
-      query: { userId },
-      body: { name }
-    })
+    await ready
+    if (!uid.value) return
+    await editor.addExercise(uid.value, workout.value.id, name)
     await fetchWorkout()
   } catch (err) {
     console.error('Error adding exercise:', err)
@@ -170,10 +163,10 @@ const onAddExercise = async (name: string) => {
 const removeExercise = async (exercise: Exercise) => {
   if (!confirm(`Remove exercise "${exercise.name}"? This will delete its sets.`)) return
   try {
-    await $fetch(`/api/exercises/${exercise.id}`, {
-      method: 'DELETE',
-      query: { userId, workoutId: workout.value?.id }
-    })
+    if (!workout.value) return
+    await ready
+    if (!uid.value) return
+    await editor.removeExercise(uid.value, workout.value.id, exercise.id)
     await fetchWorkout()
   } catch (err) {
     console.error('Error removing exercise:', err)

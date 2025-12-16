@@ -1,35 +1,31 @@
 <script setup lang="ts">
 import type { Workout } from '~/types/workout'
-
+const { workouts, list, remove } = useWorkouts()
 const loading = ref<boolean>(true)
 const stats = ref<{ totalWorkouts: number; thisWeekWorkouts: number; totalExercises: number }>({
   totalWorkouts: 0,
   thisWeekWorkouts: 0,
   totalExercises: 0
 })
-const recentWorkouts = ref<Workout[]>([])
 
-// Mock user ID - in real app, this would come from auth
-const userId = 'user123'
+const { uid, ready } = useAuth()
 
 const fetchDashboardData = async () => {
   try {
     loading.value = true
-
-    // Fetch recent workouts
-    const response: any = await $fetch('/api/workouts', {
-      query: { userId, limit: 10 }
-    })
-
-    recentWorkouts.value = response.workouts as Workout[]
-    stats.value.totalWorkouts = recentWorkouts.value.length
-    stats.value.thisWeekWorkouts = recentWorkouts.value.filter((w: Workout) => {
+    await ready
+    if (!uid.value) {
+      throw new Error('No authenticated user')
+    }
+    await list(uid.value, 10)
+    stats.value.totalWorkouts = workouts.value.length
+    stats.value.thisWeekWorkouts = workouts.value.filter((w: Workout) => {
       const workoutDate = new Date(w.date)
       const now = new Date()
       const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
       return workoutDate >= weekAgo
     }).length
-    stats.value.totalExercises = recentWorkouts.value.reduce((total: number, workout: Workout) => total + workout.exercises.length, 0)
+    stats.value.totalExercises = workouts.value.reduce((total: number, workout: Workout) => total + workout.exercises.length, 0)
 
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
@@ -42,10 +38,9 @@ const deleteWorkout = async (workoutId: string) => {
   if (!confirm('Are you sure you want to delete this workout?')) return
 
   try {
-    await $fetch(`/api/workouts/${workoutId}`, {
-      method: 'DELETE',
-      query: { userId }
-    })
+    await ready
+    if (!uid.value) return
+    await remove(workoutId, uid.value)
 
     // Refresh data
     await fetchDashboardData()
@@ -84,7 +79,7 @@ onMounted(() => {
           </NuxtLink>
         </template>
       </LayoutPageHeader>
-      <WorkoutsWorkoutList :workouts="recentWorkouts" :loading="loading" @delete="deleteWorkout" />
+      <WorkoutsWorkoutList :workouts="workouts" :loading="loading" @delete="deleteWorkout" />
     </div>
   </div>
 </template>
