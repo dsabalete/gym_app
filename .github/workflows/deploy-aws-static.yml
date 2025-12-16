@@ -31,7 +31,6 @@ jobs:
       DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
       S3_BUCKET_INPUT: ${{ github.event.inputs.s3_bucket }}
-      DISTRIBUTION_ID_INPUT: ${{ github.event.inputs.cloudfront_distribution_id }}
 
     steps:
       - name: Checkout
@@ -75,14 +74,28 @@ jobs:
 
       - name: Resolve target resources
         run: |
-          S3="${S3_BUCKET_INPUT:-$S3_BUCKET}"
-          CF="${DISTRIBUTION_ID_INPUT:-$DISTRIBUTION_ID}"
+          S3="$S3_BUCKET_INPUT"
+          CF="$DISTRIBUTION_ID"
           if [ -z "$S3" ]; then
-            echo "::error::S3 bucket not provided. Set workflow input 's3_bucket' or secret 'AWS_S3_BUCKET'."
+            if [ -n "$S3_BUCKET" ]; then
+              S3="$S3_BUCKET"
+            elif [ -n "$S3_BUCKET" ]; then
+              S3="$S3_BUCKET"
+            fi
+          fi
+          if [ -z "$CF" ]; then
+            if [ -n "$DISTRIBUTION_ID" ]; then
+              CF="$DISTRIBUTION_ID"
+            elif [ -n "$DISTRIBUTION_ID" ]; then
+              CF="$DISTRIBUTION_ID"
+            fi
+          fi
+          if [ -z "$S3" ]; then
+            echo "::error::S3 bucket not provided. Set workflow input 's3_bucket', secret 'AWS_S3_BUCKET', or repository variable 'AWS_S3_BUCKET'."
             exit 1
           fi
           if [ -z "$CF" ]; then
-            echo "::error::CloudFront distribution ID not provided. Set workflow input 'cloudfront_distribution_id' or secret 'CLOUDFRONT_DISTRIBUTION_ID'."
+            echo "::error::CloudFront distribution ID not provided. Set workflow input 'cloudfront_distribution_id', secret 'CLOUDFRONT_DISTRIBUTION_ID', or repository variable 'CLOUDFRONT_DISTRIBUTION_ID'."
             exit 1
           fi
           echo "S3_BUCKET_RESOLVED=$S3" >> $GITHUB_ENV
