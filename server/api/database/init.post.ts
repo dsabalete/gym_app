@@ -1,4 +1,4 @@
-import { getDb } from '~/server/utils/firestore'
+
 
 export default defineEventHandler(async (event) => {
   try {
