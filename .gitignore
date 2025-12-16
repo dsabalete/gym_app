@@ -19,6 +19,7 @@ bun-debug.log*
 .serverless
 .env
 .env.*
+!.env.example
 **/.terraform/*
 **/terraform.tfstate*
 Thumbs.db

@@ -1,6 +1,6 @@
 # Gym Workout Tracker
 
-A modern web application for tracking gym workouts, built with Nuxt 4, Vue 3, TailwindCSS, and AWS Aurora Serverless.
+A modern web application for tracking gym workouts, built with Nuxt 4, Vue 3, TailwindCSS, and Firebase Firestore.
 
 ## Features
 
@@ -48,21 +48,32 @@ A modern web application for tracking gym workouts, built with Nuxt 4, Vue 3, Ta
    ```
 
 4. **Seed sample data (optional):**
+
    ```bash
    curl -X POST http://localhost:3000/api/database/seed \
      -H 'Content-Type: application/json' \
      -d '{"userId":"user123","email":"user123@example.com","name":"Test User","date":"2025-01-01"}'
    ```
 
+   > **Note**: To see seeded data while logged in, replace `user123` with your Firebase Authentication UID.
+
 ### Environment Variables
 
 Create a `.env` file with:
 
 ```env
-# Firebase (Admin SDK)
+# Firebase Admin SDK (Server-side)
 FIREBASE_PROJECT_ID=your_project_id
 FIREBASE_CLIENT_EMAIL=your_service_account_email
-FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----
+FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----
+
+# Firebase Client SDK (Client-side)
+NUXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+NUXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NUXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
 # Public API base (optional)
 NUXT_PUBLIC_API_BASE=/api
@@ -187,9 +198,11 @@ const workouts = await db.collection("users").doc(userId).collection("workouts")
 - Uses Firestore `runTransaction` for multi-document consistency
 - IDs are generated in-app using `crypto.randomUUID()`
 
-### Development Auth
+### Authentication
 
-- For local development, a mock `userId = 'user123'` is used across pages. Replace with real auth in production.
+- The application uses Firebase Authentication (Google Sign-In).
+- Ensure you have enabled the **Google** sign-in provider in your Firebase Console.
+- Users are automatically created in the Firestore `users` collection upon first login.
 
 ### UI Details
 
