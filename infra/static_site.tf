@@ -1,5 +1,7 @@
+data "aws_caller_identity" "current" {}
+
 locals {
-  s3_bucket_name = "${var.project_name}-static"
+  s3_bucket_name = "${lower(var.project_name)}-${var.aws_region}-${data.aws_caller_identity.current.account_id}-static"
 }
 
 resource "aws_s3_bucket" "static_site" {
@@ -90,4 +92,3 @@ resource "aws_cloudfront_distribution" "static_site" {
     Project = var.project_name
   }
 }
-
