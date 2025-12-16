@@ -4,6 +4,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
+  updateProfile,
   type User
 } from 'firebase/auth'
 import { getDbClient } from '~/utils/firebaseClient'
@@ -40,7 +41,12 @@ export function useAuth() {
     const auth = getAuth()
     const provider = new GoogleAuthProvider()
     try {
-      await signInWithPopup(auth, provider)
+      const result = await signInWithPopup(auth, provider)
+      if (result.user.email) {
+        await updateProfile(result.user, {
+          displayName: result.user.email
+        })
+      }
     } catch (error) {
       console.error('Login failed:', error)
       throw error
