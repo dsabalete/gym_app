@@ -7,7 +7,10 @@ export function getDbClient(): Firestore {
     if (db) return db
     const config = useRuntimeConfig()
     const c = (config as any)?.public?.firebaseClient
-    const app = getApps().length ? getApps()[0] : initializeApp({
+    if (!c?.apiKey) {
+        throw new Error('Firebase API key is missing. Ensure variables are set in your environment (e.g. Vercel).')
+    }
+    const app = getApps().length > 0 ? getApps()[0]! : initializeApp({
         apiKey: c?.apiKey,
         authDomain: c?.authDomain,
         projectId: c?.projectId,
