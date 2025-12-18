@@ -94,7 +94,7 @@ jobs:
           LAMBDA="${{ secrets.AWS_LAMBDA_FUNCTION_NAME }}"
           if [ -z "$S3" ]; then S3="$S3_BUCKET"; fi
           if [ -z "$CF" ]; then CF="$DISTRIBUTION_ID"; fi
-          if [ -z "$LAMBDA" ]; then LAMBDA="${var.project_name}-api"; fi
+          if [ -z "$LAMBDA" ]; then LAMBDA="gym-app-api"; fi
           
           echo "S3_BUCKET_RESOLVED=$S3" >> $GITHUB_ENV
           echo "CF_DIST_ID_RESOLVED=$CF" >> $GITHUB_ENV
