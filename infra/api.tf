@@ -20,7 +20,7 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 }
 
 resource "aws_lambda_function" "api" {
-  filename      = "lambda.zip" # This will be managed by GitHub Actions
+  filename      = "dummy_lambda.zip" # Placeholder for initial provisioning
   function_name = "${var.project_name}-api"
   role          = aws_iam_role.lambda_exec.arn
   handler       = "index.handler"
