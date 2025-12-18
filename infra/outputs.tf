@@ -27,3 +27,12 @@ output "acm_certificate_validation_records" {
   }
   description = "DNS validation records for the ACM certificate"
 }
+
+output "cloudfront_cname_record" {
+  value = {
+    name  = "${var.subdomain}.${var.domain_name}"
+    type  = "CNAME"
+    value = try(aws_cloudfront_distribution.static_site.domain_name, null)
+  }
+  description = "CNAME record to point your subdomain to CloudFront"
+}
