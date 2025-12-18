@@ -91,18 +91,28 @@ export function useWorkouts() {
    * Reactive fetch using useFetch for components.
    * Good for initial load with lazy: true.
    */
-  function useWorkoutsFetch(userId: MaybeRefOrGetter<string | null>, limitVal = 50) {
+  function useWorkoutsFetch(userId: MaybeRefOrGetter<string | null>, limitVal = 10) {
     return useFetch<{ success: boolean; workouts: Workout[] }>('/api/workouts', {
       query: {
         userId: toRef(userId),
-        limit: limitVal
+        limit: limitVal,
+        offset: 0
       },
       lazy: true,
       key: computed(() => `workouts-${toValue(userId)}`),
       watch: [toRef(userId)],
       onResponse({ response }) {
         if (response._data?.success) {
-          store.setWorkouts(response._data.workouts)
+          const fetchedWorkouts = response._data.workouts
+          store.setWorkouts(fetchedWorkouts)
+
+          // Sync pagination state
+          if (fetchedWorkouts.length < limitVal) {
+            hasMore.value = false
+          } else {
+            hasMore.value = true
+            offset.value = fetchedWorkouts.length
+          }
         }
       }
     })
