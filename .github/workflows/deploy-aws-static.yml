@@ -111,20 +111,22 @@ jobs:
           # Wait for the code update to complete before updating configuration
           aws lambda wait function-updated --function-name "${LAMBDA_NAME_RESOLVED}"
           
-          # Create environment config JSON safely
-          cat <<EOF > env_vars.json
-          {
-            "Variables": {
-              "FIREBASE_PROJECT_ID": "${{ secrets.FIREBASE_PROJECT_ID }}",
-              "FIREBASE_CLIENT_EMAIL": "${{ secrets.FIREBASE_CLIENT_EMAIL }}",
-              "FIREBASE_PRIVATE_KEY": "${{ secrets.FIREBASE_PRIVATE_KEY }}",
-              "NUXT_FIREBASE_PROJECT_ID": "${{ secrets.FIREBASE_PROJECT_ID }}",
-              "NUXT_FIREBASE_CLIENT_EMAIL": "${{ secrets.FIREBASE_CLIENT_EMAIL }}",
-              "NUXT_FIREBASE_PRIVATE_KEY": "${{ secrets.FIREBASE_PRIVATE_KEY }}",
-              "NODE_ENV": "production"
-            }
-          }
-          EOF
+          # Create environment config JSON safely using jq to handle special characters
+          jq -n \
+            --arg pid "${{ secrets.FIREBASE_PROJECT_ID }}" \
+            --arg em "${{ secrets.FIREBASE_CLIENT_EMAIL }}" \
+            --arg pk "${{ secrets.FIREBASE_PRIVATE_KEY }}" \
+            '{
+              Variables: {
+                FIREBASE_PROJECT_ID: $pid,
+                FIREBASE_CLIENT_EMAIL: $em,
+                FIREBASE_PRIVATE_KEY: $pk,
+                NUXT_FIREBASE_PROJECT_ID: $pid,
+                NUXT_FIREBASE_CLIENT_EMAIL: $em,
+                NUXT_FIREBASE_PRIVATE_KEY: $pk,
+                NODE_ENV: "production"
+              }
+            }' > env_vars.json
           
           # Update environment variables using the JSON file
           aws lambda update-function-configuration --function-name "${LAMBDA_NAME_RESOLVED}" \

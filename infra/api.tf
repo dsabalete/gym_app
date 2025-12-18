@@ -25,6 +25,8 @@ resource "aws_lambda_function" "api" {
   role          = aws_iam_role.lambda_exec.arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
+  memory_size   = 512
+  timeout       = 30
 
   environment {
     variables = {
