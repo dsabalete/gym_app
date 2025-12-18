@@ -5,7 +5,7 @@
       <p class="text-gray-500 mt-2">Loading workouts...</p>
     </div>
     <WorkoutsEmptyState v-else-if="workouts.length === 0" />
-    <WorkoutListItem v-else v-for="w in workouts" :key="w.id" :workout="w" @delete="onDelete" />
+    <WorkoutListItem v-else v-for="w in workouts" :key="w.id" :workout="w" @delete="onDelete" @copy="onCopy" />
   </div>
   <slot name="actions" />
 </template>
@@ -22,9 +22,14 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'delete', id: string): void
+  (e: 'copy', workout: any): void
 }>()
 
 function onDelete(id: string) {
   emit('delete', id)
+}
+
+function onCopy(workout: any) {
+  emit('copy', workout)
 }
 </script>

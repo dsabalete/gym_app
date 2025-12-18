@@ -159,6 +159,13 @@ export function useWorkouts() {
     }
   }
 
+  async function copy(userId: string, sourceWorkout: Workout, newDate: string) {
+    return await create(userId, {
+      date: newDate,
+      exercises: sourceWorkout.exercises
+    })
+  }
+
   return {
     workouts,
     workout,
@@ -169,6 +176,7 @@ export function useWorkouts() {
     create,
     updateDate,
     remove,
+    copy,
     hasMore,
     useWorkoutsFetch
   }

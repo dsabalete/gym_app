@@ -9,6 +9,9 @@
           </p>
         </div>
         <div class="flex space-x-2">
+          <button @click="emit('copy', workout)" class="text-primary-600 hover:text-primary-700">
+            Copy
+          </button>
           <button @click="emit('delete', workout.id)" class="text-red-600 hover:text-red-700">
             Delete
           </button>
@@ -45,6 +48,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'delete', id: string): void
+  (e: 'copy', workout: Workout): void
 }>()
 
 const totalSets = computed(() => {
