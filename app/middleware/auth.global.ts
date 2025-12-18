@@ -4,11 +4,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     // Wait for auth to be initialized
     await ready
 
-    // Allow access to login page
+    // Allow access to login page (even if authenticated)
+    // User will be redirected after successful login
     if (to.path === '/login') {
-        if (user.value) {
-            return navigateTo('/')
-        }
         return
     }
 
