@@ -91,7 +91,7 @@ users/{userId}
   workouts/{workoutId}
     id, userId, date, createdAt, updatedAt
     exercises/{exerciseId}
-      id, name, createdAt
+      id, name, order, createdAt
       sets/{setId}
         id, setNumber, reps, weight, createdAt
 ```

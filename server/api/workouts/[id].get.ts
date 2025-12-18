@@ -44,8 +44,12 @@ export default defineEventHandler(async (event) => {
 
     const exercisesSnap = await targetDoc.ref.collection('exercises').get()
     const exerciseDocs = exercisesSnap.docs
-      .map((d) => ({ id: d.id, data: d.data(), ref: d.ref }))
-      .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+      .map((d) => ({ id: d.id, data: d.data() as any, ref: d.ref }))
+      .sort((a, b) => {
+        const ao = a.data.order ?? 999
+        const bo = b.data.order ?? 999
+        return ao - bo
+      })
     for (const ex of exerciseDocs) {
       const setsSnap = await ex.ref.collection('sets').get()
       const sets = setsSnap.docs

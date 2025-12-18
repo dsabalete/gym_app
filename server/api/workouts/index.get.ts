@@ -32,11 +32,17 @@ export default defineEventHandler(async (event) => {
       const workoutData = workoutDoc.data()
       const exercisesSnap = await workoutDoc.ref.collection('exercises').get()
       const exercises: any[] = []
-      for (const exerciseDoc of exercisesSnap.docs) {
-        const exerciseData = exerciseDoc.data()
-        const setsSnap = await exerciseDoc.ref.collection('sets').orderBy('setNumber').get()
+      const exerciseDocs = exercisesSnap.docs
+        .map((d) => ({ id: d.id, data: d.data() as any }))
+        .sort((a, b) => (a.data.order ?? 999) - (b.data.order ?? 999))
+
+      for (const exerciseDoc of exerciseDocs) {
+        const setsSnap = await db.collection('users').doc(userId)
+          .collection('workouts').doc(workoutDoc.id)
+          .collection('exercises').doc(exerciseDoc.id)
+          .collection('sets').orderBy('setNumber').get()
         const sets = setsSnap.docs.map((d) => ({ id: d.id, ...d.data() }))
-        exercises.push({ id: exerciseDoc.id, ...exerciseData, sets })
+        exercises.push({ id: exerciseDoc.id, ...exerciseDoc.data, sets })
       }
       workouts.push({ id: workoutDoc.id, ...workoutData, exercises })
     }

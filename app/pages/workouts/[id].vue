@@ -29,7 +29,7 @@
         </div>
       </UiCard>
       <ExercisesExerciseList :exercises="workout.exercises" @add-set="addSet" @save-set="saveSet"
-        @remove-set="removeSet" @remove-exercise="removeExercise" />
+        @remove-set="removeSet" @remove-exercise="removeExercise" @reorder-exercise="onReorderExercise" />
     </div>
   </div>
 </template>
@@ -171,6 +171,30 @@ const removeExercise = async (exercise: Exercise) => {
   } catch (err) {
     console.error('Error removing exercise:', err)
     alert('Failed to remove exercise')
+  }
+}
+
+const onReorderExercise = async (payload: { exercise: Exercise; index: number; direction: 'up' | 'down' }) => {
+  if (!workout.value) return
+  const { index, direction } = payload
+  const newExercises = [...workout.value.exercises]
+  const targetIndex = direction === 'up' ? index - 1 : index + 1
+
+  if (targetIndex < 0 || targetIndex >= newExercises.length) return
+
+  // Swap
+  const temp = newExercises[index]!
+  newExercises[index] = newExercises[targetIndex]!
+  newExercises[targetIndex] = temp
+
+  try {
+    await ready
+    if (!uid.value) return
+    await editor.updateExerciseOrder(uid.value, workout.value.id, newExercises)
+    await fetchWorkout()
+  } catch (err) {
+    console.error('Error reordering exercise:', err)
+    alert('Failed to reorder exercise')
   }
 }
 </script>

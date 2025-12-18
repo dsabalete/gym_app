@@ -10,7 +10,19 @@ export function useWorkoutEditor() {
 
   async function addExercise(userId: string, workoutId: string, name: string) {
     const db = getDbClient()
-    await addDoc(collection(doc(db, 'users', userId, 'workouts', workoutId), 'exercises'), { name })
+    const workoutRef = doc(db, 'users', userId, 'workouts', workoutId)
+    const exercisesSnap = await getDocs(collection(workoutRef, 'exercises'))
+    const order = exercisesSnap.docs.length
+    await addDoc(collection(workoutRef, 'exercises'), { name, order })
+  }
+
+  async function updateExerciseOrder(userId: string, workoutId: string, exercises: any[]) {
+    const db = getDbClient()
+    const updates = exercises.map((ex, index) => {
+      const exRef = doc(db, 'users', userId, 'workouts', workoutId, 'exercises', ex.id)
+      return updateDoc(exRef, { order: index })
+    })
+    await Promise.all(updates)
   }
 
   async function addSet(userId: string, workoutId: string, exerciseId: string) {
@@ -52,9 +64,27 @@ export function useWorkoutEditor() {
 
   async function removeExercise(userId: string, workoutId: string, exerciseId: string) {
     const db = getDbClient()
-    const exRef = doc(db, 'users', userId, 'workouts', workoutId, 'exercises', exerciseId)
+    const workoutRef = doc(db, 'users', userId, 'workouts', workoutId)
+    const exRef = doc(workoutRef, 'exercises', exerciseId)
+
+    // Delete the exercise first
     await deleteDoc(exRef)
+
+    // Reorder remaining exercises
+    const exercisesSnap = await getDocs(collection(workoutRef, 'exercises'))
+    const exercises = exercisesSnap.docs
+      .map(d => ({ ref: d.ref, order: d.data().order ?? 0 }))
+      .sort((a, b) => a.order - b.order)
+
+    const updates = exercises.map((ex, index) => {
+      if (ex.order !== index) {
+        return updateDoc(ex.ref, { order: index })
+      }
+      return null
+    }).filter(u => u !== null)
+
+    await Promise.all(updates)
   }
 
-  return { updateDate, addExercise, addSet, saveSet, removeSet, removeExercise }
+  return { updateDate, addExercise, updateExerciseOrder, addSet, saveSet, removeSet, removeExercise }
 }

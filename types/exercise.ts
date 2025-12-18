@@ -8,5 +8,6 @@ export interface ExerciseSet {
 export interface Exercise {
   id: string
   name: string
+  order: number
   sets: ExerciseSet[]
 }

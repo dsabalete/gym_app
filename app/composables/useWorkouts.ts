@@ -20,11 +20,15 @@ export function useWorkouts() {
     const result: Workout[] = []
     for (const w of snaps.docs) {
       const exercisesSnap = await getDocs(collection(w.ref, 'exercises'))
-      const exercises: Exercise[] = []
-      for (const ex of exercisesSnap.docs) {
-        const setsSnap = await getDocs(query(collection(ex.ref, 'sets'), orderBy('setNumber')))
+      const exercises: Exercise[] = exercisesSnap.docs
+        .map((ex) => ({ id: ex.id, ...(ex.data() as any) }))
+        .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
+
+      for (const ex of exercises) {
+        const exRef = doc(w.ref, 'exercises', ex.id)
+        const setsSnap = await getDocs(query(collection(exRef, 'sets'), orderBy('setNumber')))
         const sets: ExerciseSet[] = setsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))
-        exercises.push({ id: ex.id, ...(ex.data() as any), sets })
+        ex.sets = sets
       }
       result.push({ id: w.id, ...(w.data() as any), exercises })
     }
@@ -44,11 +48,15 @@ export function useWorkouts() {
       return
     }
     const exercisesSnap = await getDocs(collection(wRef, 'exercises'))
-    const exercises: Exercise[] = []
-    for (const ex of exercisesSnap.docs) {
-      const setsSnap = await getDocs(query(collection(ex.ref, 'sets'), orderBy('setNumber')))
+    const exercises: Exercise[] = exercisesSnap.docs
+      .map((ex) => ({ id: ex.id, ...(ex.data() as any) }))
+      .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
+
+    for (const ex of exercises) {
+      const exRef = doc(wRef, 'exercises', ex.id)
+      const setsSnap = await getDocs(query(collection(exRef, 'sets'), orderBy('setNumber')))
       const sets: ExerciseSet[] = setsSnap.docs.map((d: QueryDocumentSnapshot<DocumentData>) => ({ id: d.id, ...(d.data() as any) }))
-      exercises.push({ id: ex.id, ...(ex.data() as any), sets })
+      ex.sets = sets
     }
     workout.value = { id: wSnap.id, ...(wSnap.data() as any), exercises }
     loading.value = false
@@ -58,8 +66,9 @@ export function useWorkouts() {
     const db = getDbClient()
     const wDoc = await addDoc(collection(db, 'users', userId, 'workouts'), { date: payload.date })
     if (payload.exercises && payload.exercises.length) {
-      for (const ex of payload.exercises) {
-        const exDoc = await addDoc(collection(wDoc, 'exercises'), { name: ex.name })
+      for (let i = 0; i < payload.exercises.length; i++) {
+        const ex = payload.exercises[i]!
+        const exDoc = await addDoc(collection(wDoc, 'exercises'), { name: ex.name, order: i })
         for (const s of ex.sets) {
           await addDoc(collection(exDoc, 'sets'), { setNumber: s.setNumber, reps: s.reps, weight: s.weight })
         }
