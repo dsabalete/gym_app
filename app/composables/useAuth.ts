@@ -12,6 +12,9 @@ import { getDbClient } from '~/utils/firebaseClient'
 const userRef = ref<User | null>(null)
 const initialLoadPromise = ref<Promise<void> | null>(null)
 
+// Shared ready promise - initialized once and reused across all useAuth() calls
+let sharedReadyPromise: Promise<void> | null = null
+
 async function initAuth() {
   if (process.server) return
 
@@ -35,9 +38,12 @@ async function initAuth() {
 }
 
 export function useAuth() {
-  const ready = (async () => {
-    await initAuth()
-  })()
+  // Reuse the same ready promise across all calls
+  if (!sharedReadyPromise) {
+    sharedReadyPromise = initAuth()
+  }
+  const ready = sharedReadyPromise
+
 
   const login = async () => {
     const auth = getAuth()
