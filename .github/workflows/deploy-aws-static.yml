@@ -54,15 +54,24 @@ jobs:
         run: bunx tsc --noEmit
         continue-on-error: true
 
-      - name: Build static site
-        run: bun run generate
+      - name: Build static site and server
+        run: |
+          NITRO_PRESET=aws-lambda bun run build
 
-      - name: Ensure output dir exists
+      - name: Ensure output dirs exist
         run: |
           if [ ! -d "$NUXT_GENERATE_DIR" ]; then
-            echo "Expected generate output at $NUXT_GENERATE_DIR, listing tree for debugging:" && ls -la .output || true
-            echo "::error::Nuxt generate output directory not found" && exit 1
+            echo "::error::Nuxt public output directory not found" && exit 1
           fi
+          if [ ! -f ".output/server/index.mjs" ]; then
+            echo "::error::Nitro server output not found" && exit 1
+          fi
+
+      - name: Zip Lambda function
+        run: |
+          cd .output/server
+          zip -r ../../lambda.zip .
+          cd ../..
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -82,34 +91,26 @@ jobs:
         run: |
           S3="$S3_BUCKET_INPUT"
           CF="$DISTRIBUTION_ID"
-          if [ -z "$S3" ]; then
-            if [ -n "$S3_BUCKET" ]; then
-              S3="$S3_BUCKET"
-            elif [ -n "$S3_BUCKET" ]; then
-              S3="$S3_BUCKET"
-            fi
-          fi
-          if [ -z "$CF" ]; then
-            if [ -n "$DISTRIBUTION_ID" ]; then
-              CF="$DISTRIBUTION_ID"
-            elif [ -n "$DISTRIBUTION_ID" ]; then
-              CF="$DISTRIBUTION_ID"
-            fi
-          fi
-          if [ -z "$S3" ]; then
-            echo "::error::S3 bucket not provided. Set workflow input 's3_bucket', secret 'AWS_S3_BUCKET', or repository variable 'AWS_S3_BUCKET'."
-            exit 1
-          fi
-          if [ -z "$CF" ]; then
-            echo "::error::CloudFront distribution ID not provided. Set workflow input 'cloudfront_distribution_id', secret 'CLOUDFRONT_DISTRIBUTION_ID', or repository variable 'CLOUDFRONT_DISTRIBUTION_ID'."
-            exit 1
-          fi
+          LAMBDA="${{ secrets.AWS_LAMBDA_FUNCTION_NAME }}"
+          if [ -z "$S3" ]; then S3="$S3_BUCKET"; fi
+          if [ -z "$CF" ]; then CF="$DISTRIBUTION_ID"; fi
+          if [ -z "$LAMBDA" ]; then LAMBDA="${var.project_name}-api"; fi
+          
           echo "S3_BUCKET_RESOLVED=$S3" >> $GITHUB_ENV
           echo "CF_DIST_ID_RESOLVED=$CF" >> $GITHUB_ENV
+          echo "LAMBDA_NAME_RESOLVED=$LAMBDA" >> $GITHUB_ENV
 
       - name: Sync assets to S3
         run: |
           aws s3 sync "$NUXT_GENERATE_DIR" "s3://${S3_BUCKET_RESOLVED}" --delete
+
+      - name: Deploy to Lambda
+        run: |
+          aws lambda update-function-code --function-name "${LAMBDA_NAME_RESOLVED}" --zip-file fileb://lambda.zip
+          
+          # Update environment variables
+          aws lambda update-function-configuration --function-name "${LAMBDA_NAME_RESOLVED}" \
+            --environment "Variables={FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }},FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }},NODE_ENV=production}"
 
       - name: Invalidate CloudFront cache
         run: |
