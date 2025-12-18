@@ -108,6 +108,9 @@ jobs:
         run: |
           aws lambda update-function-code --function-name "${LAMBDA_NAME_RESOLVED}" --zip-file fileb://lambda.zip
           
+          # Wait for the code update to complete before updating configuration
+          aws lambda wait function-updated --function-name "${LAMBDA_NAME_RESOLVED}"
+          
           # Update environment variables
           aws lambda update-function-configuration --function-name "${LAMBDA_NAME_RESOLVED}" \
             --environment "Variables={FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }},FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }},NODE_ENV=production}"
