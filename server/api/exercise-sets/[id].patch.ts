@@ -23,33 +23,51 @@ export default defineEventHandler(async (event) => {
 
     const db = getDb()
     let workoutRef: FirebaseFirestore.DocumentReference
-    let setRef: FirebaseFirestore.DocumentReference
-
-    if (exerciseId && workoutId) {
-      workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
-      const exerciseRef = workoutRef.collection('exercises').doc(exerciseId)
-      setRef = exerciseRef.collection('sets').doc(setId)
-      const exists = await setRef.get()
-      if (!exists.exists) {
-        throw createError({ statusCode: 404, statusMessage: 'Set not found' })
+    if (!workoutId) {
+      // Slow fallback: search all workouts for the set
+      const workoutsSnap = await db.collection('users').doc(userId).collection('workouts').get()
+      const foundWorkout = workoutsSnap.docs.find(doc => {
+        const data = doc.data()
+        return (data.exercises || []).some((ex: any) => (ex.sets || []).some((s: any) => s.id === setId))
+      })
+      if (!foundWorkout) {
+        throw createError({ statusCode: 404, statusMessage: 'Set not found in any workout' })
       }
+      workoutRef = foundWorkout.ref
     } else {
-      const setSnap = await db.collectionGroup('sets').where('id', '==', setId).limit(1).get()
-      if (setSnap.empty) {
-        throw createError({ statusCode: 404, statusMessage: 'Set not found' })
-      }
-      const setDoc = setSnap.docs[0]
-      const exerciseRef = setDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
-      workoutRef = exerciseRef.parent.parent as FirebaseFirestore.DocumentReference
-      setRef = setDoc.ref
+      workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
     }
 
     const workoutDoc = await workoutRef.get()
-    const ownerId = (workoutDoc.data() as any)?.userId
-    if (ownerId !== userId) {
-      throw createError({ statusCode: 404, statusMessage: 'Set not found' })
+    if (!workoutDoc.exists) {
+      throw createError({ statusCode: 404, statusMessage: 'Workout not found' })
     }
-    await setRef.update(fields)
+
+    const data = workoutDoc.data()
+    const exercises = [...(data?.exercises || [])]
+
+    let targetSet: any = null
+    let targetExIndex = -1
+
+    for (let i = 0; i < exercises.length; i++) {
+      const ex = exercises[i]!
+      const setIndex = (ex.sets || []).findIndex((s: any) => s.id === setId)
+      if (setIndex !== -1) {
+        targetExIndex = i
+        targetSet = ex.sets[setIndex]
+        ex.sets[setIndex] = { ...targetSet, ...fields }
+        break
+      }
+    }
+
+    if (!targetSet) {
+      throw createError({ statusCode: 404, statusMessage: 'Set not found in workout' })
+    }
+
+    await workoutRef.update({
+      exercises,
+      updatedAt: new Date().toISOString()
+    })
     return { success: true }
   } catch (error) {
     if ((error as any)?.statusCode === 404 || (error as any)?.statusCode === 400) {

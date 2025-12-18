@@ -12,37 +12,57 @@ export default defineEventHandler(async (event) => {
     }
 
     const db = getDb()
-    let setRef: FirebaseFirestore.DocumentReference | null = null
-    let workoutRef: FirebaseFirestore.DocumentReference | null = null
-
-    if (workoutId && exerciseId) {
-      workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
-      const exerciseRef = workoutRef.collection('exercises').doc(exerciseId)
-      const exDoc = await exerciseRef.get()
-      if (!exDoc.exists) {
-        throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
+    let workoutRef: FirebaseFirestore.DocumentReference
+    if (!workoutId) {
+      // Slow fallback: search all workouts for the set
+      const workoutsSnap = await db.collection('users').doc(userId).collection('workouts').get()
+      const foundWorkout = workoutsSnap.docs.find(doc => {
+        const data = doc.data()
+        return (data.exercises || []).some((ex: any) => (ex.sets || []).some((s: any) => s.id === setId))
+      })
+      if (!foundWorkout) {
+        throw createError({ statusCode: 404, statusMessage: 'Set not found in any workout' })
       }
-      setRef = exerciseRef.collection('sets').doc(setId)
-      const sDoc = await setRef.get()
-      if (!sDoc.exists) {
-        throw createError({ statusCode: 404, statusMessage: 'Set not found' })
-      }
+      workoutRef = foundWorkout.ref
     } else {
-      const setSnap = await db.collectionGroup('sets').where('id', '==', setId).limit(1).get()
-      if (setSnap.empty) {
-        throw createError({ statusCode: 404, statusMessage: 'Set not found' })
-      }
-      const setDoc = setSnap.docs[0]
-      setRef = setDoc.ref
-      const exerciseRef = setDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
-      workoutRef = exerciseRef.parent.parent as FirebaseFirestore.DocumentReference
+      workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
     }
+
     const workoutDoc = await workoutRef.get()
-    const ownerId = (workoutDoc.data() as any)?.userId
-    if (ownerId !== userId) {
-      throw createError({ statusCode: 404, statusMessage: 'Set not found' })
+    if (!workoutDoc.exists) {
+      throw createError({ statusCode: 404, statusMessage: 'Workout not found' })
     }
-    await setRef!.delete()
+
+    const data = workoutDoc.data()
+    const exercises = [...(data?.exercises || [])]
+
+    let targetSetFound = false
+
+    for (let i = 0; i < exercises.length; i++) {
+      const ex = exercises[i]!
+      const setIndex = (ex.sets || []).findIndex((s: any) => s.id === setId)
+      if (setIndex !== -1) {
+        ex.sets.splice(setIndex, 1)
+
+        // Reorder remaining sets
+        ex.sets = ex.sets.sort((a: any, b: any) => a.setNumber - b.setNumber)
+        ex.sets.forEach((s: any, index: number) => {
+          s.setNumber = index + 1
+        })
+
+        targetSetFound = true
+        break
+      }
+    }
+
+    if (!targetSetFound) {
+      throw createError({ statusCode: 404, statusMessage: 'Set not found in workout' })
+    }
+
+    await workoutRef.update({
+      exercises,
+      updatedAt: new Date().toISOString()
+    })
     return { success: true }
   } catch (error) {
     if ((error as any)?.statusCode === 404 || (error as any)?.statusCode === 400) {

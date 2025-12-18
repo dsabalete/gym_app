@@ -19,36 +19,50 @@ export default defineEventHandler(async (event) => {
     let workoutRef: FirebaseFirestore.DocumentReference
     let exerciseRef: FirebaseFirestore.DocumentReference
 
-    if (workoutId) {
-      workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
-      exerciseRef = workoutRef.collection('exercises').doc(exerciseId)
-      const exerciseDoc = await exerciseRef.get()
-      if (!exerciseDoc.exists) {
-        throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
+    if (!workoutId) {
+      // Slow fallback: search all workouts for the exercise
+      const workoutsSnap = await db.collection('users').doc(userId).collection('workouts').get()
+      const foundWorkout = workoutsSnap.docs.find(doc => {
+        const data = doc.data()
+        return (data.exercises || []).some((ex: any) => ex.id === exerciseId)
+      })
+      if (!foundWorkout) {
+        throw createError({ statusCode: 404, statusMessage: 'Exercise not found in any workout' })
       }
+      workoutRef = foundWorkout.ref
     } else {
-      const exSnap = await db.collectionGroup('exercises').where('id', '==', exerciseId).limit(1).get()
-      if (exSnap.empty) {
-        throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
-      }
-      const exerciseDoc = exSnap.docs[0]
-      exerciseRef = exerciseDoc.ref
-      workoutRef = exerciseDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
+      workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
     }
+
     const workoutDoc = await workoutRef.get()
-    const ownerId = (workoutDoc.data() as any)?.userId
-    if (ownerId !== userId) {
-      throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
+    if (!workoutDoc.exists) {
+      throw createError({ statusCode: 404, statusMessage: 'Workout not found' })
     }
 
-    const latestSnap = await exerciseRef.collection('sets').orderBy('setNumber', 'desc').limit(1).get()
-    const nextNumber = (latestSnap.docs[0]?.data()?.setNumber ?? 0) + 1
-    const setNumber = Number.isFinite(Number(setNumberInput)) && Number(setNumberInput) > 0 ? Number(setNumberInput) : nextNumber
+    const data = workoutDoc.data()
+    const exercises = [...(data?.exercises || [])]
+    const exIndex = exercises.findIndex((ex: any) => ex.id === exerciseId)
+    if (exIndex === -1) {
+      throw createError({ statusCode: 404, statusMessage: 'Exercise not found in workout' })
+    }
 
+    const exercise = exercises[exIndex]!
+    const nextNumber = (exercise.sets || []).length + 1
     const setId = randomUUID()
-    await runTransaction(async (tx) => {
-      const setRef = exerciseRef.collection('sets').doc(setId)
-      tx.set(setRef, { id: setId, setNumber, reps, weight, createdAt: new Date().toISOString() })
+    const newSet = {
+      id: setId,
+      setNumber: Number.isFinite(Number(setNumberInput)) ? Number(setNumberInput) : nextNumber,
+      reps,
+      weight,
+      createdAt: new Date().toISOString()
+    }
+
+    exercise.sets = [...(exercise.sets || []), newSet]
+    exercises[exIndex] = exercise
+
+    await workoutRef.update({
+      exercises,
+      updatedAt: new Date().toISOString()
     })
 
     return { success: true, setId }

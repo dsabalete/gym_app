@@ -14,35 +14,46 @@ export default defineEventHandler(async (event) => {
     let workoutRef: FirebaseFirestore.DocumentReference
     let exerciseRef: FirebaseFirestore.DocumentReference
 
-    if (workoutId) {
-      workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
-      exerciseRef = workoutRef.collection('exercises').doc(exerciseId)
-      const exDoc = await exerciseRef.get()
-      if (!exDoc.exists) {
-        throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
+    if (!workoutId) {
+      // Slow fallback: search all workouts for the exercise
+      const workoutsSnap = await db.collection('users').doc(userId).collection('workouts').get()
+      const foundWorkout = workoutsSnap.docs.find(doc => {
+        const data = doc.data()
+        return (data.exercises || []).some((ex: any) => ex.id === exerciseId)
+      })
+      if (!foundWorkout) {
+        throw createError({ statusCode: 404, statusMessage: 'Exercise not found in any workout' })
       }
+      workoutRef = foundWorkout.ref
     } else {
-      const exSnap = await db.collectionGroup('exercises').where('id', '==', exerciseId).limit(1).get()
-      if (exSnap.empty) {
-        throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
-      }
-      const exerciseDoc = exSnap.docs[0]
-      exerciseRef = exerciseDoc.ref
-      workoutRef = exerciseDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
-    }
-    const workoutDoc = await workoutRef.get()
-    const ownerId = (workoutDoc.data() as any)?.userId
-    if (ownerId !== userId) {
-      throw createError({ statusCode: 404, statusMessage: 'Exercise not found' })
+      workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
     }
 
-    const batch = db.batch()
-    const setsSnap = await exerciseRef.collection('sets').get()
-    for (const setDoc of setsSnap.docs) {
-      batch.delete(setDoc.ref)
+    const workoutDoc = await workoutRef.get()
+    if (!workoutDoc.exists) {
+      throw createError({ statusCode: 404, statusMessage: 'Workout not found' })
     }
-    batch.delete(exerciseRef)
-    await batch.commit()
+
+    const data = workoutDoc.data()
+    let exercises = [...(data?.exercises || [])]
+    const exIndex = exercises.findIndex((ex: any) => ex.id === exerciseId)
+    if (exIndex === -1) {
+      throw createError({ statusCode: 404, statusMessage: 'Exercise not found in workout' })
+    }
+
+    // Remove exercise
+    exercises.splice(exIndex, 1)
+
+    // Reorder remaining exercises
+    exercises = exercises.sort((a: any, b: any) => a.order - b.order)
+    exercises.forEach((ex: any, index: number) => {
+      ex.order = index
+    })
+
+    await workoutRef.update({
+      exercises,
+      updatedAt: new Date().toISOString()
+    })
 
     return { success: true }
   } catch (error) {

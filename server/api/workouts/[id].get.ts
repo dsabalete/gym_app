@@ -13,58 +13,39 @@ export default defineEventHandler(async (event) => {
     }
 
     const db = getDb()
-    let targetWorkoutRef: FirebaseFirestore.DocumentReference | null = null
-
     const workoutRef = db.collection('users').doc(userId).collection('workouts').doc(workoutId)
-    const workoutDoc = await workoutRef.get()
-    if (workoutDoc.exists) {
-      targetWorkoutRef = workoutRef
-    } else {
-      const exSnap = await db.collectionGroup('exercises').where('id', '==', workoutId).limit(1).get()
-      if (!exSnap.empty) {
-        const exerciseDoc = exSnap.docs[0]
-        targetWorkoutRef = exerciseDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
-      } else {
-        const setSnap = await db.collectionGroup('sets').where('id', '==', workoutId).limit(1).get()
-        if (setSnap.empty) {
-          throw createError({ statusCode: 404, statusMessage: 'Workout not found' })
-        }
-        const setDoc = setSnap.docs[0]
-        const exerciseRef = setDoc.ref.parent.parent as FirebaseFirestore.DocumentReference
-        targetWorkoutRef = exerciseRef.parent.parent as FirebaseFirestore.DocumentReference
-      }
-    }
+    const targetDoc = await workoutRef.get()
 
-    const targetDoc = await targetWorkoutRef!.get()
     if (!targetDoc.exists) {
       throw createError({ statusCode: 404, statusMessage: 'Workout not found' })
     }
-    const workoutData = targetDoc.data() as any
-    const workout: any = { id: targetDoc.id, ...workoutData, exercises: [] }
 
-    const exercisesSnap = await targetDoc.ref.collection('exercises').get()
-    const exerciseDocs = exercisesSnap.docs
-      .map((d) => ({ id: d.id, data: d.data() as any, ref: d.ref }))
-      .sort((a, b) => {
-        const ao = a.data.order ?? 999
-        const bo = b.data.order ?? 999
-        return ao - bo
-      })
-    for (const ex of exerciseDocs) {
-      const setsSnap = await ex.ref.collection('sets').get()
-      const sets = setsSnap.docs
-        .map((s) => ({ id: s.id, ...s.data() }))
-        .sort((a, b) => {
-          const an = Number((a as any).setNumber) || 0
-          const bn = Number((b as any).setNumber) || 0
-          return an - bn
-        })
-      workout.exercises.push({ id: ex.id, ...ex.data, sets })
+    const workoutData = targetDoc.data() as any
+    let exercises = workoutData.exercises || []
+
+    // Legacy support: fetch from sub-collections if flattened data is missing
+    if (exercises.length === 0) {
+      const exercisesSnap = await workoutRef.collection('exercises').get()
+      if (!exercisesSnap.empty) {
+        exercises = await Promise.all(exercisesSnap.docs.map(async (exDoc) => {
+          const exData = exDoc.data()
+          const setsSnap = await exDoc.ref.collection('sets').orderBy('setNumber').get()
+          const sets = setsSnap.docs.map(s => ({ id: s.id, ...s.data() }))
+          return { id: exDoc.id, ...exData, sets }
+        }))
+      }
     }
+
+    // Sort exercises by order
+    exercises.sort((a: any, b: any) => (a.order ?? 999) - (b.order ?? 999))
 
     return {
       success: true,
-      workout
+      workout: {
+        id: targetDoc.id,
+        ...workoutData,
+        exercises
+      }
     }
   } catch (error) {
     if ((error as any)?.statusCode === 404) {

@@ -27,27 +27,28 @@ export default defineEventHandler(async (event) => {
         updatedAt: new Date().toISOString()
       })
 
-      for (const exercise of exercises) {
-        const exerciseId = randomUUID()
-        const exerciseRef = workoutRef.collection('exercises').doc(exerciseId)
-        tx.set(exerciseRef, {
-          id: exerciseId,
-          name: exercise.name,
+      const flattenedExercises = exercises.map((ex: any, index: number) => ({
+        id: randomUUID(),
+        name: ex.name,
+        order: index,
+        createdAt: new Date().toISOString(),
+        sets: (ex.sets || []).map((set: any) => ({
+          id: randomUUID(),
+          setNumber: set.setNumber,
+          reps: set.reps,
+          weight: set.weight,
           createdAt: new Date().toISOString()
-        })
+        }))
+      }))
 
-        for (const set of exercise.sets) {
-          const setId = randomUUID()
-          const setRef = exerciseRef.collection('sets').doc(setId)
-          tx.set(setRef, {
-            id: setId,
-            setNumber: set.setNumber,
-            reps: set.reps,
-            weight: set.weight,
-            createdAt: new Date().toISOString()
-          })
-        }
-      }
+      tx.set(workoutRef, {
+        id: workoutId,
+        userId,
+        date,
+        exercises: flattenedExercises,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      })
     })
 
     return {

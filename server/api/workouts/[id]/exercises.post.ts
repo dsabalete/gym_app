@@ -21,8 +21,22 @@ export default defineEventHandler(async (event) => {
     if (!workoutDoc.exists) {
       throw createError({ statusCode: 404, statusMessage: 'Workout not found' })
     }
+    const workoutData = workoutDoc.data()
+    const exercises = workoutData?.exercises || []
     const exerciseId = randomUUID()
-    await workoutRef.collection('exercises').doc(exerciseId).set({ id: exerciseId, name, createdAt: new Date().toISOString() })
+    const newExercise = {
+      id: exerciseId,
+      name,
+      order: exercises.length,
+      sets: [],
+      createdAt: new Date().toISOString()
+    }
+
+    await workoutRef.update({
+      exercises: [...exercises, newExercise],
+      updatedAt: new Date().toISOString()
+    })
+
     return { success: true, exerciseId }
   } catch (error) {
     if ((error as any)?.statusCode === 400 || (error as any)?.statusCode === 404) {

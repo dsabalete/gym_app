@@ -1,91 +1,175 @@
-import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, orderBy, limit as limitFn, query, updateDoc } from 'firebase/firestore'
-import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore'
-import { getDbClient } from '~/utils/firebaseClient'
+import { useWorkoutStore } from '~/stores/workoutStore'
+import { storeToRefs } from 'pinia'
 import type { Workout } from '~~/types/workout'
-import type { Exercise, ExerciseSet } from '~~/types/exercise'
 
 export function useWorkouts() {
-  const workouts = ref<Workout[]>([])
-  const workout = ref<Workout | null>(null)
+  const store = useWorkoutStore()
+  const { workouts, currentWorkout: workout } = storeToRefs(store)
   const loading = ref<boolean>(false)
   const error = ref<string>('')
+  const hasMore = ref<boolean>(true)
+  const offset = ref<number>(0)
 
-  async function list(userId: string, limit = 100) {
-    loading.value = true
+  /**
+   * List workouts using the server route.
+   * Leverages server-side parallel fetching for efficiency.
+   */
+  async function list(userId: string, limitVal = 10, loadMore = false) {
+    if (loading.value || (!hasMore.value && loadMore)) return
+
+    if (workouts.value.length === 0) {
+      loading.value = true
+    }
+
     error.value = ''
-    const db = getDbClient()
-    const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(limit, 100) : 50
-    const q = query(collection(db, 'users', userId, 'workouts'), orderBy('date', 'desc'), limitFn(safeLimit))
-    const snaps = await getDocs(q)
-    const result: Workout[] = []
-    for (const w of snaps.docs) {
-      const exercisesSnap = await getDocs(collection(w.ref, 'exercises'))
-      const exercises: Exercise[] = exercisesSnap.docs
-        .map((ex) => ({ id: ex.id, ...(ex.data() as any) }))
-        .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
 
-      for (const ex of exercises) {
-        const exRef = doc(w.ref, 'exercises', ex.id)
-        const setsSnap = await getDocs(query(collection(exRef, 'sets'), orderBy('setNumber')))
-        const sets: ExerciseSet[] = setsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))
-        ex.sets = sets
-      }
-      result.push({ id: w.id, ...(w.data() as any), exercises })
+    if (!loadMore) {
+      offset.value = 0
     }
-    workouts.value = result
-    loading.value = false
-  }
 
-  async function getById(id: string, userId: string) {
-    loading.value = true
-    error.value = ''
-    const db = getDbClient()
-    const wRef = doc(db, 'users', userId, 'workouts', id)
-    const wSnap = await getDoc(wRef)
-    if (!wSnap.exists()) {
-      workout.value = null
-      loading.value = false
-      return
-    }
-    const exercisesSnap = await getDocs(collection(wRef, 'exercises'))
-    const exercises: Exercise[] = exercisesSnap.docs
-      .map((ex) => ({ id: ex.id, ...(ex.data() as any) }))
-      .sort((a, b) => (a.order ?? 999) - (b.order ?? 999))
+    try {
+      const response = await $fetch<{ success: boolean; workouts: Workout[]; pagination: any }>('/api/workouts', {
+        query: {
+          userId,
+          limit: limitVal,
+          offset: offset.value
+        }
+      })
 
-    for (const ex of exercises) {
-      const exRef = doc(wRef, 'exercises', ex.id)
-      const setsSnap = await getDocs(query(collection(exRef, 'sets'), orderBy('setNumber')))
-      const sets: ExerciseSet[] = setsSnap.docs.map((d: QueryDocumentSnapshot<DocumentData>) => ({ id: d.id, ...(d.data() as any) }))
-      ex.sets = sets
-    }
-    workout.value = { id: wSnap.id, ...(wSnap.data() as any), exercises }
-    loading.value = false
-  }
+      if (response.success) {
+        const fetchedWorkouts = response.workouts
 
-  async function create(userId: string, payload: { date: string; exercises?: Array<{ name: string; sets: Array<{ setNumber: number; reps: number; weight: number }> }> }) {
-    const db = getDbClient()
-    const wDoc = await addDoc(collection(db, 'users', userId, 'workouts'), { date: payload.date })
-    if (payload.exercises && payload.exercises.length) {
-      for (let i = 0; i < payload.exercises.length; i++) {
-        const ex = payload.exercises[i]!
-        const exDoc = await addDoc(collection(wDoc, 'exercises'), { name: ex.name, order: i })
-        for (const s of ex.sets) {
-          await addDoc(collection(exDoc, 'sets'), { setNumber: s.setNumber, reps: s.reps, weight: s.weight })
+        if (fetchedWorkouts.length < limitVal) {
+          hasMore.value = false
+        } else {
+          hasMore.value = true
+          offset.value += fetchedWorkouts.length
+        }
+
+        if (loadMore) {
+          store.setWorkouts([...workouts.value, ...fetchedWorkouts])
+        } else {
+          store.setWorkouts(fetchedWorkouts)
         }
       }
+    } catch (e: any) {
+      error.value = e.statusMessage || e.message || 'Failed to fetch workouts'
+    } finally {
+      loading.value = false
     }
-    return wDoc.id
+  }
+
+  /**
+   * Get a single workout by ID using the server route.
+   */
+  async function getById(id: string, userId: string) {
+    const cached = workouts.value.find(w => w.id === id)
+    if (cached) {
+      store.setCurrentWorkout(cached)
+    } else {
+      loading.value = true
+    }
+
+    error.value = ''
+    try {
+      const response = await $fetch<{ success: boolean; workout: Workout }>(`/api/workouts/${id}`, {
+        query: { userId }
+      })
+
+      if (response.success) {
+        store.setCurrentWorkout(response.workout)
+        store.updateWorkout(response.workout)
+      }
+    } catch (e: any) {
+      error.value = e.statusMessage || e.message || 'Failed to fetch workout'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Reactive fetch using useFetch for components.
+   * Good for initial load with lazy: true.
+   */
+  function useWorkoutsFetch(userId: MaybeRefOrGetter<string | null>, limitVal = 50) {
+    return useFetch<{ success: boolean; workouts: Workout[] }>('/api/workouts', {
+      query: {
+        userId: toRef(userId),
+        limit: limitVal
+      },
+      lazy: true,
+      key: computed(() => `workouts-${toValue(userId)}`),
+      watch: [toRef(userId)],
+      onResponse({ response }) {
+        if (response._data?.success) {
+          store.setWorkouts(response._data.workouts)
+        }
+      }
+    })
+  }
+
+  async function create(userId: string, payload: { date: string; exercises?: any[] }) {
+    loading.value = true
+    try {
+      const response = await $fetch<{ success: boolean; workoutId: string }>('/api/workouts', {
+        method: 'POST',
+        body: { userId, ...payload }
+      })
+
+      if (response.success) {
+        // We might want to fetch the full workout object here or just add partial to store
+        // For now, let's just trigger a re-list or add optimistically if we have enough data
+        // But the server does flattening, so it's better to fetch if we want the 'id's etc.
+        await list(userId)
+        return response.workoutId
+      }
+    } catch (e: any) {
+      error.value = e.statusMessage || e.message || 'Failed to create workout'
+    } finally {
+      loading.value = false
+    }
   }
 
   async function updateDate(userId: string, workoutId: string, date: string) {
-    const db = getDbClient()
-    await updateDoc(doc(db, 'users', userId, 'workouts', workoutId), { date })
+    try {
+      await $fetch(`/api/workouts/${workoutId}`, {
+        method: 'PATCH',
+        query: { userId },
+        body: { date }
+      })
+
+      const existing = workouts.value.find(w => w.id === workoutId)
+      if (existing) {
+        store.updateWorkout({ ...existing, date })
+      }
+    } catch (e: any) {
+      error.value = e.statusMessage || e.message || 'Failed to update workout date'
+    }
   }
 
   async function remove(id: string, userId: string) {
-    const db = getDbClient()
-    await deleteDoc(doc(db, 'users', userId, 'workouts', id))
+    try {
+      await $fetch(`/api/workouts/${id}`, {
+        method: 'DELETE',
+        query: { userId }
+      })
+      store.removeWorkout(id)
+    } catch (e: any) {
+      error.value = e.statusMessage || e.message || 'Failed to delete workout'
+    }
   }
 
-  return { workouts, workout, loading, error, list, getById, create, updateDate, remove }
+  return {
+    workouts,
+    workout,
+    loading,
+    error,
+    list,
+    getById,
+    create,
+    updateDate,
+    remove,
+    hasMore,
+    useWorkoutsFetch
+  }
 }

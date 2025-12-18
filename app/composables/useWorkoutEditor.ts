@@ -1,89 +1,206 @@
-import { collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore'
 import { getDbClient } from '~/utils/firebaseClient'
 import type { ExerciseSet } from '~~/types/exercise'
+import { useWorkoutStore } from '~/stores/workoutStore'
 
 export function useWorkoutEditor() {
+  const store = useWorkoutStore()
+
   async function updateDate(userId: string, workoutId: string, date: string) {
     const db = getDbClient()
-    await updateDoc(doc(db, 'users', userId, 'workouts', workoutId), { date })
+    const updateData = {
+      date,
+      updatedAt: new Date().toISOString()
+    }
+    await updateDoc(doc(db, 'users', userId, 'workouts', workoutId), updateData)
+
+    // Sync store
+    const existing = store.workouts.find(w => w.id === workoutId)
+    if (existing) {
+      store.updateWorkout({ ...existing, ...updateData })
+    }
   }
 
   async function addExercise(userId: string, workoutId: string, name: string) {
     const db = getDbClient()
     const workoutRef = doc(db, 'users', userId, 'workouts', workoutId)
-    const exercisesSnap = await getDocs(collection(workoutRef, 'exercises'))
-    const order = exercisesSnap.docs.length
-    await addDoc(collection(workoutRef, 'exercises'), { name, order })
+    const workoutSnap = await getDoc(workoutRef)
+    if (!workoutSnap.exists()) return
+
+    const exercises = workoutSnap.data().exercises || []
+    const newExercise = {
+      id: crypto.randomUUID(),
+      name,
+      order: exercises.length,
+      sets: []
+    }
+
+    const updatedExercises = [...exercises, newExercise]
+    const updateData = {
+      exercises: updatedExercises,
+      updatedAt: new Date().toISOString()
+    }
+
+    await updateDoc(workoutRef, updateData)
+
+    // Sync store
+    const existing = store.workouts.find(w => w.id === workoutId)
+    if (existing) {
+      store.updateWorkout({ ...existing, ...updateData })
+    }
   }
 
   async function updateExerciseOrder(userId: string, workoutId: string, exercises: any[]) {
     const db = getDbClient()
-    const updates = exercises.map((ex, index) => {
-      const exRef = doc(db, 'users', userId, 'workouts', workoutId, 'exercises', ex.id)
-      return updateDoc(exRef, { order: index })
-    })
-    await Promise.all(updates)
+    const workoutRef = doc(db, 'users', userId, 'workouts', workoutId)
+
+    const reorderedExercises = exercises.map((ex, index) => ({
+      ...ex,
+      order: index
+    }))
+
+    const updateData = {
+      exercises: reorderedExercises,
+      updatedAt: new Date().toISOString()
+    }
+
+    await updateDoc(workoutRef, updateData)
+
+    // Sync store
+    const existing = store.workouts.find(w => w.id === workoutId)
+    if (existing) {
+      store.updateWorkout({ ...existing, ...updateData })
+    }
   }
 
   async function addSet(userId: string, workoutId: string, exerciseId: string) {
     const db = getDbClient()
-    const exRef = doc(db, 'users', userId, 'workouts', workoutId, 'exercises', exerciseId)
-    const setsSnap = await getDocs(query(collection(exRef, 'sets'), orderBy('setNumber')))
-    const nextNumber = setsSnap.docs.length + 1
-    await addDoc(collection(exRef, 'sets'), { setNumber: nextNumber, reps: 0, weight: 0 })
+    const workoutRef = doc(db, 'users', userId, 'workouts', workoutId)
+    const workoutSnap = await getDoc(workoutRef)
+    if (!workoutSnap.exists()) return
+
+    const exercises = [...(workoutSnap.data().exercises || [])]
+    const exerciseIndex = exercises.findIndex(ex => ex.id === exerciseId)
+    if (exerciseIndex === -1) return
+
+    const exercise = exercises[exerciseIndex]!
+    const nextNumber = (exercise.sets || []).length + 1
+    const newSet = {
+      id: crypto.randomUUID(),
+      setNumber: nextNumber,
+      reps: 0,
+      weight: 0
+    }
+
+    exercise.sets = [...(exercise.sets || []), newSet]
+    exercises[exerciseIndex] = exercise
+
+    const updateData = {
+      exercises,
+      updatedAt: new Date().toISOString()
+    }
+
+    await updateDoc(workoutRef, updateData)
+
+    // Sync store
+    const existing = store.workouts.find(w => w.id === workoutId)
+    if (existing) {
+      store.updateWorkout({ ...existing, ...updateData })
+    }
   }
 
   async function saveSet(userId: string, workoutId: string, exerciseId: string, set: ExerciseSet) {
     const db = getDbClient()
-    const setRef = doc(db, 'users', userId, 'workouts', workoutId, 'exercises', exerciseId, 'sets', set.id)
-    await updateDoc(setRef, { setNumber: set.setNumber, reps: set.reps, weight: set.weight })
+    const workoutRef = doc(db, 'users', userId, 'workouts', workoutId)
+    const workoutSnap = await getDoc(workoutRef)
+    if (!workoutSnap.exists()) return
+
+    const exercises = [...(workoutSnap.data().exercises || [])]
+    const exerciseIndex = exercises.findIndex(ex => ex.id === exerciseId)
+    if (exerciseIndex === -1) return
+
+    const exercise = exercises[exerciseIndex]!
+    const setIndex = exercise.sets.findIndex((s: any) => s.id === set.id)
+    if (setIndex === -1) return
+
+    exercise.sets[setIndex] = { ...set }
+    exercises[exerciseIndex] = exercise
+
+    const updateData = {
+      exercises,
+      updatedAt: new Date().toISOString()
+    }
+
+    await updateDoc(workoutRef, updateData)
+
+    // Sync store
+    const existing = store.workouts.find(w => w.id === workoutId)
+    if (existing) {
+      store.updateWorkout({ ...existing, ...updateData })
+    }
   }
 
   async function removeSet(userId: string, workoutId: string, exerciseId: string, setId: string) {
     const db = getDbClient()
-    const exRef = doc(db, 'users', userId, 'workouts', workoutId, 'exercises', exerciseId)
-    const setRef = doc(exRef, 'sets', setId)
+    const workoutRef = doc(db, 'users', userId, 'workouts', workoutId)
+    const workoutSnap = await getDoc(workoutRef)
+    if (!workoutSnap.exists()) return
 
-    // Delete the set first
-    await deleteDoc(setRef)
+    const exercises = [...(workoutSnap.data().exercises || [])]
+    const exerciseIndex = exercises.findIndex(ex => ex.id === exerciseId)
+    if (exerciseIndex === -1) return
+
+    const exercise = exercises[exerciseIndex]!
+    exercise.sets = exercise.sets.filter((s: any) => s.id !== setId)
 
     // Reorder remaining sets
-    const setsSnap = await getDocs(query(collection(exRef, 'sets'), orderBy('setNumber')))
-    let currentNumber = 1
-    const updates = []
+    exercise.sets = exercise.sets.sort((a: any, b: any) => a.setNumber - b.setNumber)
+    exercise.sets.forEach((s: any, index: number) => {
+      s.setNumber = index + 1
+    })
 
-    for (const docSnapshot of setsSnap.docs) {
-      if (docSnapshot.data().setNumber !== currentNumber) {
-        updates.push(updateDoc(docSnapshot.ref, { setNumber: currentNumber }))
-      }
-      currentNumber++
+    exercises[exerciseIndex] = exercise
+
+    const updateData = {
+      exercises,
+      updatedAt: new Date().toISOString()
     }
 
-    await Promise.all(updates)
+    await updateDoc(workoutRef, updateData)
+
+    // Sync store
+    const existing = store.workouts.find(w => w.id === workoutId)
+    if (existing) {
+      store.updateWorkout({ ...existing, ...updateData })
+    }
   }
 
   async function removeExercise(userId: string, workoutId: string, exerciseId: string) {
     const db = getDbClient()
     const workoutRef = doc(db, 'users', userId, 'workouts', workoutId)
-    const exRef = doc(workoutRef, 'exercises', exerciseId)
+    const workoutSnap = await getDoc(workoutRef)
+    if (!workoutSnap.exists()) return
 
-    // Delete the exercise first
-    await deleteDoc(exRef)
+    let exercises = (workoutSnap.data().exercises || []).filter((ex: any) => ex.id !== exerciseId)
 
     // Reorder remaining exercises
-    const exercisesSnap = await getDocs(collection(workoutRef, 'exercises'))
-    const exercises = exercisesSnap.docs
-      .map(d => ({ ref: d.ref, order: d.data().order ?? 0 }))
-      .sort((a, b) => a.order - b.order)
+    exercises = exercises.sort((a: any, b: any) => a.order - b.order)
+    exercises.forEach((ex: any, index: number) => {
+      ex.order = index
+    })
 
-    const updates = exercises.map((ex, index) => {
-      if (ex.order !== index) {
-        return updateDoc(ex.ref, { order: index })
-      }
-      return null
-    }).filter(u => u !== null)
+    const updateData = {
+      exercises,
+      updatedAt: new Date().toISOString()
+    }
 
-    await Promise.all(updates)
+    await updateDoc(workoutRef, updateData)
+
+    // Sync store
+    const existing = store.workouts.find(w => w.id === workoutId)
+    if (existing) {
+      store.updateWorkout({ ...existing, ...updateData })
+    }
   }
 
   return { updateDate, addExercise, updateExerciseOrder, addSet, saveSet, removeSet, removeExercise }

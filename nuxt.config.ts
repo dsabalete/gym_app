@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     }
   },
   modules: [
-    '@nuxtjs/tailwindcss', '@pinia/nuxt'
+    '@nuxtjs/tailwindcss', '@pinia/nuxt', '@pinia-plugin-persistedstate/nuxt'
   ],
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
