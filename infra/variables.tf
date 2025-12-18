@@ -23,3 +23,13 @@ variable "enable_static_hosting" {
   default = true
   description = "Enable provisioning of S3+CloudFront for static hosting"
 }
+
+variable "domain_name" {
+  type    = string
+  default = "davidsabalete.com"
+}
+
+variable "subdomain" {
+  type    = string
+  default = "gym"
+}

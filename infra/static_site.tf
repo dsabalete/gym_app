@@ -50,6 +50,7 @@ resource "aws_cloudfront_distribution" "static_site" {
   enabled             = true
   is_ipv6_enabled     = true
   price_class         = "PriceClass_100"
+  aliases             = ["${var.subdomain}.${var.domain_name}"]
 
   origin {
     domain_name = aws_s3_bucket.static_site.bucket_regional_domain_name
@@ -117,7 +118,9 @@ resource "aws_cloudfront_distribution" "static_site" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = aws_acm_certificate_validation.cert.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 
   custom_error_response {
