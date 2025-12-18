@@ -89,7 +89,8 @@ export function useWorkoutEditor() {
       id: crypto.randomUUID(),
       setNumber: nextNumber,
       reps: 0,
-      weight: 0
+      weight: 0,
+      completed: false
     }
 
     exercise.sets = [...(exercise.sets || []), newSet]
