@@ -1,5 +1,6 @@
 
 
+import { filterOutArchived } from '../../services/workoutsHelpers'
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event)
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
     const workoutSnaps = await workoutsQuery.get()
 
     // Fetch all workouts and their sub-collections in parallel
-    const workouts = await Promise.all(workoutSnaps.docs.map(async (workoutDoc) => {
+    const workoutsRaw = await Promise.all(workoutSnaps.docs.map(async (workoutDoc) => {
       const workoutData = workoutDoc.data()
       let exercises = workoutData.exercises || []
 
@@ -50,6 +51,8 @@ export default defineEventHandler(async (event) => {
 
       return { id: workoutDoc.id, ...workoutData, exercises }
     }))
+
+    const workouts = filterOutArchived(workoutsRaw)
 
     return {
       success: true,

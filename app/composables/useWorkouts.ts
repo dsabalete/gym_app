@@ -169,6 +169,44 @@ export function useWorkouts() {
     }
   }
 
+  async function archive(userId: string, workoutId: string) {
+    try {
+      await $fetch(`/api/workouts/${workoutId}/archive`, {
+        method: 'POST',
+        query: { userId }
+      })
+      const existing = workouts.value.find(w => w.id === workoutId)
+      if (existing) {
+        store.updateWorkout({ ...existing, archived: true, archiveDate: new Date().toISOString() })
+      }
+    } catch (e: any) {
+      error.value = e.statusMessage || e.message || 'Failed to archive workout'
+    }
+  }
+
+  async function restore(userId: string, workoutId: string) {
+    try {
+      await $fetch(`/api/workouts/${workoutId}/restore`, {
+        method: 'POST',
+        query: { userId }
+      })
+    } catch (e: any) {
+      error.value = e.statusMessage || e.message || 'Failed to restore workout'
+    }
+  }
+
+  async function listArchived(userId: string, limitVal = 10, loadMore = false, q = '') {
+    try {
+      const response = await $fetch<{ success: boolean; workouts: Workout[]; pagination: any }>('/api/workouts/archived', {
+        query: { userId, limit: limitVal, offset: loadMore ? offset.value : 0, q }
+      })
+      return response.workouts || []
+    } catch (e: any) {
+      error.value = e.statusMessage || e.message || 'Failed to fetch archived workouts'
+      return []
+    }
+  }
+
   async function copy(userId: string, sourceWorkout: Workout, newDate: string) {
     return await create(userId, {
       date: newDate,
@@ -186,6 +224,9 @@ export function useWorkouts() {
     create,
     updateDate,
     remove,
+    archive,
+    restore,
+    listArchived,
     copy,
     hasMore,
     useWorkoutsFetch

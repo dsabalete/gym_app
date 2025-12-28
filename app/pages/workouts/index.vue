@@ -7,7 +7,15 @@
         </NuxtLink>
       </template>
     </LayoutPageHeader>
-    <WorkoutsWorkoutList :workouts="workouts" :loading="loading" @delete="deleteWorkout" @copy="handleCopyRequested" />
+    <WorkoutsWorkoutList :workouts="workouts" :loading="loading" @delete="deleteWorkout" @copy="handleCopyRequested" @archive="archiveWorkout" />
+
+    <UiAlert v-if="successMessage" type="success" :title="successMessage" dismissible @close="successMessage = ''" />
+
+    <div class="mt-4">
+      <NuxtLink to="/workouts/archived">
+        <UiButton variant="secondary">View Archived</UiButton>
+      </NuxtLink>
+    </div>
 
     <div v-if="hasMore" class="mt-8 flex justify-center">
       <UiButton :loading="loadingMore" variant="secondary" @click="loadMore">
@@ -31,9 +39,10 @@
   </div>
 </template>
 <script setup lang="ts">
-const { workouts, list, remove, copy, hasMore, useWorkoutsFetch, loading: actionLoading } = useWorkouts()
+const { workouts, list, remove, copy, archive, hasMore, useWorkoutsFetch, loading: actionLoading } = useWorkouts()
 const { uid } = useAuth()
 const loadingMore = ref<boolean>(false)
+const successMessage = ref<string>('')
 
 const isCopyModalOpen = ref(false)
 const selectedWorkout = ref<any>(null)
@@ -69,6 +78,19 @@ const deleteWorkout = async (workoutId: string) => {
   }
 }
 
+const archiveWorkout = async (workoutId: string) => {
+  if (!confirm('Archive this workout? You can restore it later.')) return
+  try {
+    if (!uid.value) return
+    await archive(uid.value, workoutId)
+    successMessage.value = 'Workout archived successfully'
+    await list(uid.value)
+  } catch (error) {
+    console.error('Error archiving workout:', error)
+    alert('Failed to archive workout')
+  }
+}
+
 const handleCopyRequested = (workout: any) => {
   selectedWorkout.value = workout
   isCopyModalOpen.value = true
@@ -89,3 +111,6 @@ const confirmCopy = async () => {
   }
 }
 </script>
+
+<style scoped>
+</style>

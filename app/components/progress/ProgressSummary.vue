@@ -18,16 +18,16 @@
 
 <script setup lang="ts">
 import type { Workout } from '~~/types/workout'
+import { getUTCStartOfWeek } from '~~/app/utils/date'
 
 const props = defineProps<{
   workouts: Workout[]
 }>()
 
 const stats = computed(() => {
-  const now = new Date()
   const weekMs = 7 * 24 * 60 * 60 * 1000
-  const thisWeekStart = new Date(now.getTime() - weekMs)
-  const lastWeekStart = new Date(now.getTime() - 2 * weekMs)
+  const thisWeekStart = getUTCStartOfWeek(new Date(), 1)
+  const lastWeekStart = new Date(thisWeekStart.getTime() - weekMs)
 
   const thisWeekWorkouts = props.workouts.filter(w => new Date(w.date) >= thisWeekStart)
   const lastWeekWorkouts = props.workouts.filter(w => {

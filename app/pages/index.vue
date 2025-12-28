@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Workout } from '~~/types/workout'
+import { isDateInCurrentUTCWeek } from '~~/app/utils/date'
 const { workouts, list, remove } = useWorkouts()
 const loading = ref<boolean>(true)
 const stats = ref<{ totalWorkouts: number; thisWeekWorkouts: number; totalExercises: number }>({
@@ -20,10 +21,7 @@ const fetchDashboardData = async () => {
     await list(uid.value, 10)
     stats.value.totalWorkouts = workouts.value.length
     stats.value.thisWeekWorkouts = workouts.value.filter((w: Workout) => {
-      const workoutDate = new Date(w.date)
-      const now = new Date()
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      return workoutDate >= weekAgo
+      return isDateInCurrentUTCWeek(w.date, 1)
     }).length
     stats.value.totalExercises = workouts.value.reduce((total: number, workout: Workout) => total + workout.exercises.length, 0)
 

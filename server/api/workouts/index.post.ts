@@ -23,6 +23,8 @@ export default defineEventHandler(async (event) => {
         id: workoutId,
         userId,
         date,
+        archived: false,
+        archiveDate: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       })
@@ -45,6 +47,8 @@ export default defineEventHandler(async (event) => {
         id: workoutId,
         userId,
         date,
+        archived: false,
+        archiveDate: null,
         exercises: flattenedExercises,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

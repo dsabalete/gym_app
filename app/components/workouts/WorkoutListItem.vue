@@ -19,12 +19,23 @@
               Copy
             </span>
           </UiButton>
+          <UiButton variant="secondary" size="sm" aria-label="Archive" @click="emit('archive', workout.id)">
+            <span class="inline-flex items-center">
+              <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5">
+                <path d="M3 7h18v4H3z" />
+                <path d="M5 11v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+                <path d="M10 15h4" />
+              </svg>
+              Archive
+            </span>
+          </UiButton>
           <UiButton variant="danger" size="sm" aria-label="Delete" @click="emit('delete', workout.id)">
             <span class="inline-flex items-center">
               <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M9 3h6m-7 3h8m-9 0v13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6M10 10v8M14 10v8" />
+                  d="M9 3h6m-7 3h8m-9 0v13a2 2 0 0 0 2 2h6a 2 2 0 0 0 2-2V6M10 10v8M14 10v8" />
               </svg>
               Delete
             </span>
@@ -63,6 +74,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'delete', id: string): void
   (e: 'copy', workout: Workout): void
+  (e: 'archive', id: string): void
 }>()
 
 const totalSets = computed(() => {

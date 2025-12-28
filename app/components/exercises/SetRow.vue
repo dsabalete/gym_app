@@ -13,7 +13,7 @@
     <td class="px-3 py-2 text-sm text-gray-900">
       <input v-model.number="local.weight" type="number" step="0.5" min="0" class="w-20 border rounded px-2 py-1" />
     </td>
-    <td class="px-3 py-2 text-sm text-gray-900 align-middle">
+    <td class="flex items-center px-3 py-2 text-sm text-gray-900 align-middle">
       <UiButton variant="secondary" size="sm" class="mr-2" @click="save">
         <span v-if="props.saving" class="inline-flex items-center gap-2">
           <svg class="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
