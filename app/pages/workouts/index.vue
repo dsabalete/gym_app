@@ -13,7 +13,7 @@
 
     <div class="mt-4">
       <NuxtLink to="/workouts/archived">
-        <UiButton variant="secondary">View Archived</UiButton>
+        <UiButton variant="secondary">View Completed</UiButton>
       </NuxtLink>
     </div>
 
@@ -83,7 +83,7 @@ const archiveWorkout = async (workoutId: string) => {
   try {
     if (!uid.value) return
     await archive(uid.value, workoutId)
-    successMessage.value = 'Workout archived successfully'
+    successMessage.value = 'Workout marked as completed'
   } catch (error) {
     console.error('Error archiving workout:', error)
     alert('Failed to archive workout')

@@ -20,15 +20,15 @@
               Copy
             </span>
           </UiButton>
-          <UiButton variant="secondary" size="sm" aria-label="Archive" @click="emit('archive', workout.id)">
+          <UiButton variant="secondary" size="sm" aria-label="Complete" @click="emit('archive', workout.id)">
             <span class="inline-flex items-center">
               <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="1.5">
                 <path d="M3 7h18v4H3z" />
-                <path d="M5 11v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+                <path d="M5 11v6a2 2 0 0 0 2 2h10a 2 2 0 0 0 2-2v-6" />
                 <path d="M10 15h4" />
               </svg>
-              Archive
+              Complete
             </span>
           </UiButton>
           <UiButton variant="danger" size="sm" aria-label="Delete" @click="emit('delete', workout.id)">
@@ -56,7 +56,7 @@
     </div>
     <template #footer>
       <div class="flex justify-end items-center space-x-3">
-        <span v-if="workout.archived" class="text-green-600 text-sm">Archived</span>
+        <span v-if="workout.archived" class="text-green-600 text-sm">Completed</span>
         <NuxtLink :to="`/workouts/${workout.id}`">
           <UiButton variant="secondary">View Details</UiButton>
         </NuxtLink>

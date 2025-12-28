@@ -1,6 +1,6 @@
 <template>
   <div class="page-archived-workouts px-4 py-6 sm:px-0">
-    <LayoutPageHeader title="Archived Workouts">
+    <LayoutPageHeader title="Completed Workouts">
       <template #actions>
         <NuxtLink to="/workouts">
           <UiButton variant="secondary">Back to Workouts</UiButton>
@@ -15,17 +15,17 @@
     <UiAlert v-if="successMessage" type="success" :title="successMessage" dismissible @close="successMessage = ''" />
     <div v-if="loading" class="text-center py-8">
       <UiSkeleton class="mx-auto" width="200px" height="20px" />
-      <p class="text-gray-500 mt-2">Loading archived workouts...</p>
+      <p class="text-gray-500 mt-2">Loading completed workouts...</p>
     </div>
     <div v-else>
-      <div v-if="archived.length === 0" class="text-center text-gray-500">No archived workouts</div>
+      <div v-if="archived.length === 0" class="text-center text-gray-500">No completed workouts</div>
       <div v-else class="space-y-4">
         <UiCard v-for="w in archived" :key="w.id" class="opacity-60">
           <template #header>
             <div class="flex justify-between items-start">
               <div>
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-300">Workout {{ formatDate(w.date) }}</h3>
-                <p class="text-sm text-gray-500 mt-1">Archived {{ formatDateTime(w.archiveDate) }}</p>
+                <p class="text-sm text-gray-500 mt-1">Completed {{ formatDateTime(w.archiveDate) }}</p>
               </div>
               <UiButton variant="secondary" size="sm" @click="doRestore(w.id)">Restore</UiButton>
             </div>
