@@ -62,7 +62,7 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-              <SetRow v-for="set in exercise.sets" :key="set.id" :set="set"
+              <SetRow v-for="set in exercise.sets" :key="set.id" :set="set" :saving="props.savingIds?.has(set.id)"
                 @save="s => emit('save-set', { set: s, exerciseId: exercise.id })"
                 @remove="s => emit('remove-set', { set: s, exerciseId: exercise.id })" />
             </tbody>
@@ -85,6 +85,7 @@ const props = defineProps<{
   exercise: Exercise
   isFirst?: boolean
   isLast?: boolean
+  savingIds?: Set<string>
 }>()
 
 const emit = defineEmits<{
