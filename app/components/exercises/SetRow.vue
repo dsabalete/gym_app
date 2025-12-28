@@ -13,8 +13,8 @@
     <td class="px-3 py-2 text-sm text-gray-900">
       <input v-model.number="local.weight" type="number" step="0.5" min="0" class="w-20 border rounded px-2 py-1" />
     </td>
-    <td class="px-3 py-2 text-sm text-gray-900">
-      <UiButton variant="secondary" class="mr-2" @click="save">
+    <td class="px-3 py-2 text-sm text-gray-900 align-middle">
+      <UiButton variant="secondary" size="sm" class="mr-2" @click="save">
         <span v-if="props.saving" class="inline-flex items-center gap-2">
           <svg class="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24">
@@ -25,7 +25,16 @@
         </span>
         <span v-else>Save</span>
       </UiButton>
-      <button class="text-red-600 hover:text-red-700" @click="emit('remove', set)">Delete</button>
+      <UiButton variant="danger" size="sm" aria-label="Delete" @click="emit('remove', set)">
+        <span class="inline-flex items-center gap-2">
+          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 3h6m-7 3h8m-9 0v13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6M10 10v8M14 10v8" />
+          </svg>
+          Delete
+        </span>
+      </UiButton>
     </td>
   </tr>
 </template>

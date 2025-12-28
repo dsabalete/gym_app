@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 const props = withDefaults(defineProps<{
-  variant?: 'primary' | 'secondary' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   disabled?: boolean
@@ -35,7 +35,8 @@ const sizeMap: Record<typeof props.size, string> = {
 const variantMap: Record<typeof props.variant, string> = {
   primary: 'btn-primary',
   secondary: 'btn-secondary',
-  ghost: 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:text:white dark:hover:bg-gray-700'
+  ghost: 'bg-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:text:white dark:hover:bg-gray-700',
+  danger: 'btn-danger'
 }
 
 const classes = computed(() => {

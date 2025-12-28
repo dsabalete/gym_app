@@ -9,12 +9,26 @@
           </p>
         </div>
         <div class="flex space-x-2">
-          <button @click="emit('copy', workout)" class="text-primary-600 hover:text-primary-700">
-            Copy
-          </button>
-          <button @click="emit('delete', workout.id)" class="text-red-600 hover:text-red-700">
-            Delete
-          </button>
+          <UiButton variant="secondary" size="sm" aria-label="Copy" @click="emit('copy', workout)">
+            <span class="inline-flex items-center">
+              <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5">
+                <rect x="9" y="9" width="10" height="12" rx="2" />
+                <rect x="5" y="3" width="10" height="12" rx="2" />
+              </svg>
+              Copy
+            </span>
+          </UiButton>
+          <UiButton variant="danger" size="sm" aria-label="Delete" @click="emit('delete', workout.id)">
+            <span class="inline-flex items-center">
+              <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 3h6m-7 3h8m-9 0v13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6M10 10v8M14 10v8" />
+              </svg>
+              Delete
+            </span>
+          </UiButton>
         </div>
       </div>
     </template>
