@@ -1,6 +1,5 @@
 
 
-import { filterOutArchived } from '../../services/workoutsHelpers'
 export default defineEventHandler(async (event) => {
   try {
     const query = getQuery(event)
@@ -52,7 +51,7 @@ export default defineEventHandler(async (event) => {
       return { id: workoutDoc.id, ...workoutData, exercises }
     }))
 
-    const workouts = filterOutArchived(workoutsRaw)
+    const workouts = workoutsRaw
 
     return {
       success: true,

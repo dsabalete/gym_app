@@ -122,7 +122,7 @@ export function useWorkouts() {
     loading.value = true
     try {
       const response = await $fetch<{ success: boolean; workoutId: string }>('/api/workouts', {
-        method: 'POST',
+        method: 'post',
         body: { userId, ...payload }
       })
 
@@ -143,7 +143,7 @@ export function useWorkouts() {
   async function updateDate(userId: string, workoutId: string, date: string) {
     try {
       await $fetch(`/api/workouts/${workoutId}`, {
-        method: 'PATCH',
+        method: 'patch' as any,
         query: { userId },
         body: { date }
       })
@@ -160,7 +160,7 @@ export function useWorkouts() {
   async function remove(id: string, userId: string) {
     try {
       await $fetch(`/api/workouts/${id}`, {
-        method: 'DELETE',
+        method: 'delete' as any,
         query: { userId }
       })
       store.removeWorkout(id)
@@ -172,7 +172,7 @@ export function useWorkouts() {
   async function archive(userId: string, workoutId: string) {
     try {
       await $fetch(`/api/workouts/${workoutId}/archive`, {
-        method: 'POST',
+        method: 'post',
         query: { userId }
       })
       const existing = workouts.value.find(w => w.id === workoutId)
@@ -187,7 +187,7 @@ export function useWorkouts() {
   async function restore(userId: string, workoutId: string) {
     try {
       await $fetch(`/api/workouts/${workoutId}/restore`, {
-        method: 'POST',
+        method: 'post',
         query: { userId }
       })
     } catch (e: any) {
@@ -195,10 +195,10 @@ export function useWorkouts() {
     }
   }
 
-  async function listArchived(userId: string, limitVal = 10, loadMore = false, q = '') {
+  async function listArchived(userId: string, limitVal = 10, loadMore = false, q = '', startOffset = 0) {
     try {
       const response = await $fetch<{ success: boolean; workouts: Workout[]; pagination: any }>('/api/workouts/archived', {
-        query: { userId, limit: limitVal, offset: loadMore ? offset.value : 0, q }
+        query: { userId, limit: limitVal, offset: startOffset, q }
       })
       return response.workouts || []
     } catch (e: any) {

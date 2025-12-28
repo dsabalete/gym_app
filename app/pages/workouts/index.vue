@@ -84,7 +84,6 @@ const archiveWorkout = async (workoutId: string) => {
     if (!uid.value) return
     await archive(uid.value, workoutId)
     successMessage.value = 'Workout archived successfully'
-    await list(uid.value)
   } catch (error) {
     console.error('Error archiving workout:', error)
     alert('Failed to archive workout')

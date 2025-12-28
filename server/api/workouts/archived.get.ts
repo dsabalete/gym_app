@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     const userRef = db.collection('users').doc(userId)
     const workoutsQuery = userRef
       .collection('workouts')
-      .where('archived', '==', true)
+      .where('archiveDate', '>=', '')
       .orderBy('archiveDate', 'desc')
       .limit(safeLimit)
       .offset(safeOffset)

@@ -73,7 +73,7 @@
     }
     try {
       if (!loadMore) loading.value = true
-      const items = await listArchived(uid.value, 10, loadMore, q.value)
+      const items = await listArchived(uid.value, 10, loadMore, q.value, offset.value)
       if (items.length < 10) {
         hasMore.value = false
       } else {
@@ -88,7 +88,14 @@
   }
   
   onMounted(() => {
-    fetchPage(false)
+    if (uid.value) {
+      fetchPage(false)
+    }
+  })
+  watch(uid, (val) => {
+    if (val) {
+      fetchPage(false)
+    }
   })
   
   const loadMore = async () => {

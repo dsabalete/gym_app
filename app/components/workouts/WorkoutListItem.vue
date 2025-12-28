@@ -1,5 +1,6 @@
 <template>
-  <UiCard class="workout-list-item border border-gray-200 dark:border-gray-700 p-4 rounded-md">
+  <UiCard
+    :class="['workout-list-item border border-gray-200 dark:border-gray-700 p-4 rounded-md', workout.archived ? 'opacity-60' : '']">
     <template #header>
       <div class="flex justify-between items-start">
         <div>
@@ -54,7 +55,8 @@
       </span>
     </div>
     <template #footer>
-      <div class="flex justify-end">
+      <div class="flex justify-end items-center space-x-3">
+        <span v-if="workout.archived" class="text-green-600 text-sm">Archived</span>
         <NuxtLink :to="`/workouts/${workout.id}`">
           <UiButton variant="secondary">View Details</UiButton>
         </NuxtLink>
