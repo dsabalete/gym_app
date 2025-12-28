@@ -1,5 +1,5 @@
 <template>
-  <UiCard class="workout-list-item">
+  <UiCard class="workout-list-item border border-gray-200 dark:border-gray-700 p-4 rounded-md">
     <template #header>
       <div class="flex justify-between items-start">
         <div>
