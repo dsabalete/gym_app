@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     <UiCard v-for="stat in stats" :key="stat.label"
       class="p-4 border-l-4 border-l-primary/50 hover:border-l-primary transition-all duration-300 group">
       <h3
@@ -32,10 +32,10 @@ const stats = computed(() => {
   const thisWeekStart = getUTCStartOfWeek(new Date(), 1)
   const lastWeekStart = new Date(thisWeekStart.getTime() - weekMs)
 
-  const thisWeekWorkouts = props.workouts.filter(w => new Date(w.date) >= thisWeekStart)
+  const thisWeekWorkouts = props.workouts.filter(w => new Date(w.date) >= thisWeekStart && !!w.archived)
   const lastWeekWorkouts = props.workouts.filter(w => {
     const d = new Date(w.date)
-    return d >= lastWeekStart && d < thisWeekStart
+    return d >= lastWeekStart && d < thisWeekStart && !!w.archived
   })
 
   const getMetrics = (workouts: Workout[]) => {
@@ -80,6 +80,11 @@ const stats = computed(() => {
       label: 'Total Sets',
       value: current.sets,
       change: calculateChange(current.sets, previous.sets)
+    },
+    {
+      label: 'Total Reps',
+      value: current.reps,
+      change: calculateChange(current.reps, previous.reps)
     },
     {
       label: 'Total Volume',

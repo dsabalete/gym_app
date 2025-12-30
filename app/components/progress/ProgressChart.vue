@@ -16,19 +16,14 @@
 
     <div class="relative h-64 flex items-end justify-between gap-2 px-2 mt-8">
       <div v-for="bar in bars" :key="bar.label" class="flex-1 flex flex-col items-center group">
+        <span class="text-[10px] font-bold text-white mb-1 opacity-80 group-hover:opacity-100 transition-opacity">
+          {{ bar.raw }}{{ activeMetric === 'volume' ? 'kg' : '' }}
+        </span>
         <div
           class="relative w-full flex items-end justify-center h-48 bg-white/5 rounded-t-lg overflow-hidden border-b border-white/10">
           <div :style="{ height: `${bar.height}%` }"
             class="w-full bg-primary shadow-[0_0_10px_rgba(46,209,108,0.2)] transition-all duration-500 ease-out group-hover:bg-primary-400 group-hover:shadow-[0_0_15px_rgba(46,209,108,0.4)] relative">
             <div class="absolute top-0 left-0 right-0 h-1 bg-white/20"></div>
-          </div>
-          <!-- Tooltip -->
-          <div
-            class="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-            <div
-              class="bg-background-light text-white text-[10px] font-bold py-1 px-2 rounded whitespace-nowrap shadow-xl border border-primary/20">
-              {{ bar.raw }} {{metrics.find(m => m.id === activeMetric)?.label}}
-            </div>
           </div>
         </div>
         <p
@@ -42,6 +37,7 @@
 
 <script setup lang="ts">
 import type { Workout } from '~~/types/workout'
+import { getUTCStartOfWeek } from '~~/app/utils/date'
 
 const props = defineProps<{
   workouts: Workout[]
@@ -57,19 +53,20 @@ const metrics = [
 
 const bars = computed(() => {
   const now = new Date()
+  const currentWeekStart = getUTCStartOfWeek(now, 1)
   const weekMs = 7 * 24 * 60 * 60 * 1000
 
   // Last 8 weeks
   const weeks = Array.from({ length: 8 }).map((_, i) => {
-    const start = new Date(now.getTime() - (7 - i) * weekMs)
+    const start = new Date(currentWeekStart.getTime() - (7 - i) * weekMs)
     const end = new Date(start.getTime() + weekMs)
 
     // Label as "MM/DD"
-    const label = `${start.getMonth() + 1}/${start.getDate()}`
+    const label = `${start.getUTCMonth() + 1}/${start.getUTCDate()}`
 
     const weekWorkouts = props.workouts.filter(w => {
       const d = new Date(w.date)
-      return d >= start && d < end
+      return d >= start && d < end && !!w.archived
     })
 
     let value = 0
