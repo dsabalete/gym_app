@@ -25,7 +25,7 @@
   }
 
   .card {
-    @apply bg-background-light rounded-3xl border border-white/5 p-6 shadow-xl backdrop-blur-sm;
+    @apply bg-background-light rounded-3xl border border-white/5 p-4 md:p-6 shadow-xl backdrop-blur-sm;
   }
 
   .stat {

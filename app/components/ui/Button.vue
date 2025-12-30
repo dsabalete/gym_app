@@ -27,7 +27,7 @@ const emit = defineEmits<{
 
 const base = 'inline-flex items-center justify-center rounded-lg transition-colors'
 const sizeMap: Record<typeof props.size, string> = {
-  sm: 'text-sm py-1.5 px-3',
+  sm: 'text-sm py-1.5 px-2',
   md: 'text-sm py-2 px-4',
   lg: 'text-base py-3 px-6'
 }
