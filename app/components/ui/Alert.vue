@@ -27,9 +27,9 @@ const emit = defineEmits<{
 }>()
 
 const classes = computed(() => {
-  if (props.type === 'success') return 'rounded-lg border border-green-200 bg-green-50 text-green-800 p-3'
-  if (props.type === 'warning') return 'rounded-lg border border-yellow-200 bg-yellow-50 text-yellow-800 p-3'
-  if (props.type === 'error') return 'rounded-lg border border-red-200 bg-red-50 text-red-800 p-3'
-  return 'rounded-lg border border-blue-200 bg-blue-50 text-blue-800 p-3'
+  if (props.type === 'success') return 'rounded-lg border border-primary/20 bg-primary/10 text-primary p-3'
+  if (props.type === 'warning') return 'rounded-lg border border-yellow-500/20 bg-yellow-500/10 text-yellow-400 p-3'
+  if (props.type === 'error') return 'rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 p-3'
+  return 'rounded-lg border border-white/20 bg-white/10 text-white p-3'
 })
 </script>

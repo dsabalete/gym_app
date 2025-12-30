@@ -1,16 +1,16 @@
 <template>
   <UiCard
-    :class="['workout-list-item border border-gray-200 dark:border-gray-700 p-4 rounded-md', workout.archived ? 'opacity-60' : '']">
+    :class="['workout-list-item', workout.archived ? 'opacity-60' : '']">
     <template #header>
       <div class="flex justify-between items-start">
         <div>
-          <h3 class="text-lg font-medium text-gray-900 dark:text-gray-300">{{ formatDate(workout.date) }}</h3>
-          <p class="text-sm text-gray-500 mt-1">
+          <h3 class="text-xl font-bold text-white">{{ formatDate(workout.date) }}</h3>
+          <p class="text-sm text-gray-400 mt-1">
             {{ workout.exercises.length }} exercises • {{ totalSets }} sets
           </p>
         </div>
         <div class="flex space-x-2">
-          <UiButton variant="secondary" size="sm" aria-label="Copy" @click="emit('copy', workout)">
+          <UiButton variant="ghost" size="sm" aria-label="Copy" @click="emit('copy', workout)">
             <span class="inline-flex items-center">
               <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="1.5">
@@ -20,7 +20,7 @@
               Copy
             </span>
           </UiButton>
-          <UiButton variant="secondary" size="sm" aria-label="Complete" @click="emit('archive', workout.id)">
+          <UiButton variant="ghost" size="sm" aria-label="Complete" @click="emit('archive', workout.id)">
             <span class="inline-flex items-center">
               <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="1.5">
@@ -46,17 +46,17 @@
     </template>
     <div class="flex flex-wrap gap-2">
       <span v-for="exercise in workout.exercises.slice(0, 6)" :key="exercise.id"
-        class="inline-block rounded-full bg-primary-50 text-primary-700 border border-primary-200 text-xs px-2 py-1">
+        class="inline-block rounded-full bg-primary/20 text-primary border border-primary/20 text-xs font-semibold px-2 py-1">
         {{ exercise.name }}
       </span>
       <span v-if="workout.exercises.length > 6"
-        class="inline-block rounded-full bg-gray-100 text-gray-700 border border-gray-200 text-xs px-2 py-1">
+        class="inline-block rounded-full bg-white/5 text-gray-400 border border-white/10 text-xs font-semibold px-2 py-1">
         +{{ workout.exercises.length - 6 }} more
       </span>
     </div>
     <template #footer>
       <div class="flex justify-end items-center space-x-3">
-        <span v-if="workout.archived" class="text-green-600 text-sm">Completed</span>
+        <span v-if="workout.archived" class="text-primary text-sm font-bold">Completed</span>
         <NuxtLink :to="`/workouts/${workout.id}`">
           <UiButton variant="secondary">View Details</UiButton>
         </NuxtLink>

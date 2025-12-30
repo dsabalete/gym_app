@@ -1,13 +1,16 @@
 <template>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <UiCard v-for="stat in stats" :key="stat.label" class="p-4">
-      <h3 class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wider">{{ stat.label }}
+    <UiCard v-for="stat in stats" :key="stat.label"
+      class="p-4 border-l-4 border-l-primary/50 hover:border-l-primary transition-all duration-300 group">
+      <h3
+        class="text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider group-hover:text-primary transition-colors">
+        {{ stat.label }}
       </h3>
       <div class="flex items-baseline justify-between">
-        <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ stat.value }}</p>
+        <p class="text-2xl font-extrabold text-white tracking-tight">{{ stat.value }}</p>
         <span v-if="stat.change !== undefined" :class="[
-          'text-xs font-medium px-1.5 py-0.5 rounded-full',
-          stat.change >= 0 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+          'text-xs font-bold px-1.5 py-0.5 rounded-full border',
+          stat.change >= 0 ? 'bg-primary/10 text-primary border-primary/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
         ]">
           {{ stat.change >= 0 ? '+' : '' }}{{ stat.change }}%
         </span>

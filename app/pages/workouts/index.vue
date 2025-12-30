@@ -7,7 +7,8 @@
         </NuxtLink>
       </template>
     </LayoutPageHeader>
-    <WorkoutsWorkoutList :workouts="workouts" :loading="loading" @delete="deleteWorkout" @copy="handleCopyRequested" @archive="archiveWorkout" />
+    <WorkoutsWorkoutList :workouts="workouts" :loading="loading" @delete="deleteWorkout" @copy="handleCopyRequested"
+      @archive="archiveWorkout" />
 
     <UiAlert v-if="successMessage" type="success" :title="successMessage" dismissible @close="successMessage = ''" />
 
@@ -24,14 +25,14 @@
     </div>
 
     <UiModal :open="isCopyModalOpen" @close="isCopyModalOpen = false">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Copy Workout</h3>
-      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <h3 class="text-lg font-bold text-white uppercase tracking-wide mb-4">Copy Workout</h3>
+      <p class="text-sm text-gray-400 mb-6">
         Select the target date for the copied workout.
       </p>
       <UiInput v-model="targetDate" label="Target Date" type="date" />
       <template #footer>
         <div class="flex justify-end space-x-3">
-          <UiButton variant="secondary" @click="isCopyModalOpen = false">Cancel</UiButton>
+          <UiButton variant="ghost" @click="isCopyModalOpen = false">Cancel</UiButton>
           <UiButton variant="primary" :loading="copying" @click="confirmCopy">Copy Workout</UiButton>
         </div>
       </template>
@@ -39,6 +40,9 @@
   </div>
 </template>
 <script setup lang="ts">
+import { useAuth } from '~/composables/useAuth'
+import { useWorkouts } from '~/composables/useWorkouts'
+
 const { workouts, list, remove, copy, archive, hasMore, useWorkoutsFetch, loading: actionLoading } = useWorkouts()
 const { uid } = useAuth()
 const loadingMore = ref<boolean>(false)
@@ -111,5 +115,4 @@ const confirmCopy = async () => {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

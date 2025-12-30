@@ -1,13 +1,13 @@
 <template>
   <label class="ui-select block">
-    <span v-if="label" class="block text-sm font-medium text-gray-700 mb-1">{{ label }}</span>
+    <span v-if="label" class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">{{ label }}</span>
     <select :value="modelValue" :disabled="disabled" @change="onChange"
-      class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100">
+      class="w-full rounded-lg border border-white/10 bg-background-light text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-50">
       <option v-for="opt in options" :key="String(opt.value)" :value="opt.value">
         {{ opt.label }}
       </option>
     </select>
-    <p v-if="error" class="mt-1 text-xs text-red-600">{{ error }}</p>
+    <p v-if="error" class="mt-1 text-xs text-red-400">{{ error }}</p>
   </label>
 </template>
 

@@ -1,7 +1,7 @@
 <template>
   <section class="mb-8 layout-section">
-    <header v-if="title" class="mb-3">
-      <h3 class="text-lg font-medium text-gray-900 dark:text-gray-50">{{ title }}</h3>
+    <header v-if="title" class="mb-4">
+      <h3 class="text-lg font-bold uppercase tracking-wider text-gray-400">{{ title }}</h3>
     </header>
     <div>
       <slot />

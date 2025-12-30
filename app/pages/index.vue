@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useAuth } from '~/composables/useAuth'
+import { useWorkouts } from '~/composables/useWorkouts'
 import type { Workout } from '~~/types/workout'
 import { isDateInCurrentUTCWeek } from '~~/app/utils/date'
+
 const { workouts, list, remove } = useWorkouts()
 const loading = ref<boolean>(true)
 const stats = ref<{ totalWorkouts: number; thisWeekWorkouts: number; totalExercises: number }>({
@@ -84,10 +87,10 @@ onMounted(() => {
 
 <style lang="css" scoped>
 .card-title {
-  @apply text-xs font-medium text-gray-600 dark:text-gray-300 mb-1;
+  @apply text-xs font-bold uppercase tracking-wider text-gray-400 mb-1;
 }
 
 .card-content {
-  @apply text-2xl font-bold text-gray-900 dark:text-gray-300;
+  @apply text-3xl font-bold text-white;
 }
 </style>

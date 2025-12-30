@@ -16,19 +16,19 @@
       <!-- Exercises -->
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-gray-200">Exercises</h2>
+          <h2 class="text-lg font-bold text-white uppercase tracking-wide">Exercises</h2>
           <UiButton type="button" variant="primary" @click="addExercise">Add Exercise</UiButton>
         </div>
 
-        <div v-if="workout.exercises.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
-          <p class="text-gray-500">No exercises added yet.</p>
+        <div v-if="workout.exercises.length === 0" class="text-center py-8 bg-white/5 rounded-lg border border-white/5">
+          <p class="text-gray-400">No exercises added yet.</p>
           <UiButton type="button" variant="primary" class="mt-4" @click="addExercise">Add First Exercise</UiButton>
         </div>
 
-        <div v-for="(exercise, exerciseIndex) in workout.exercises" :key="exercise.id" class="card">
+        <UiCard v-for="(exercise, exerciseIndex) in workout.exercises" :key="exercise.id">
           <div class="flex justify-between items-start mb-4">
-            <h3 class="text-md font-medium text-gray-900 dark:text-gray-200">Exercise {{ exerciseIndex + 1 }}</h3>
-            <button type="button" @click="removeExercise(exerciseIndex)" class="text-red-600 hover:text-red-700">
+            <h3 class="text-md font-bold text-white uppercase tracking-wide">Exercise {{ exerciseIndex + 1 }}</h3>
+            <button type="button" @click="removeExercise(exerciseIndex)" class="text-red-400 hover:text-red-300 font-medium">
               Remove
             </button>
           </div>
@@ -41,21 +41,21 @@
           <!-- Sets -->
           <div class="space-y-3">
             <div class="flex justify-between items-center">
-              <h4 class="text-sm font-medium text-gray-700">Sets</h4>
-              <UiButton type="button" variant="secondary" class="text-sm" @click="addSet(exerciseIndex)">Add Set
+              <h4 class="text-sm font-bold text-gray-400 uppercase">Sets</h4>
+              <UiButton type="button" variant="ghost" class="text-sm" @click="addSet(exerciseIndex)">Add Set
               </UiButton>
             </div>
 
-            <div v-if="exercise.sets.length === 0" class="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded">
+            <div v-if="exercise.sets.length === 0" class="text-sm text-gray-400 text-center py-4 bg-white/5 rounded border border-white/5">
               No sets added yet.
             </div>
 
             <div v-for="(set, setIndex) in exercise.sets" :key="set.id" class="grid grid-cols-4 gap-3 items-end">
               <div>
-                <label class="block text-xs text-gray-600 mb-1">
+                <label class="block text-xs font-medium text-gray-400 mb-1 uppercase">
                   Set #
                 </label>
-                <div class="px-3 py-2 border rounded text-sm text-gray-900">{{ set.setNumber }}</div>
+                <div class="px-3 py-2 border border-white/10 bg-white/5 rounded text-sm text-white font-bold">{{ set.setNumber }}</div>
               </div>
 
               <div>
@@ -69,13 +69,13 @@
               </div>
 
               <div>
-                <UiButton type="button" variant="secondary" class="ml-2" @click="removeSet(exerciseIndex, setIndex)">
+                <UiButton type="button" variant="danger" class="ml-2 w-full" @click="removeSet(exerciseIndex, setIndex)">
                   Remove
                 </UiButton>
               </div>
             </div>
           </div>
-        </div>
+        </UiCard>
       </div>
 
       <!-- Submit Button -->
@@ -91,6 +91,8 @@
 
 <script setup lang="ts">
 import { useWorkouts } from '~/composables/useWorkouts'
+import { useAuth } from '~/composables/useAuth'
+
 const loading = ref<boolean>(false)
 const workout = ref<{ date: string; exercises: Array<{ id: number; name: string; sets: Array<{ id: number; setNumber: number; reps: number; weight: number }> }> }>({
   date: '',

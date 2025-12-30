@@ -2,7 +2,7 @@
   <div class="workout-list space-y-6">
     <div v-if="loading" class="text-center py-8">
       <UiSkeleton class="mx-auto" width="200px" height="20px" />
-      <p class="text-gray-500 mt-2">Loading workouts...</p>
+      <p class="text-gray-400 mt-2">Loading workouts...</p>
     </div>
     <WorkoutsEmptyState v-else-if="workouts.length === 0" />
     <WorkoutListItem v-else v-for="w in workouts" :key="w.id" :workout="w" @delete="onDelete" @copy="onCopy" @archive="onArchive" />

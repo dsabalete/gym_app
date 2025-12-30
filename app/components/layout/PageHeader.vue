@@ -1,10 +1,10 @@
 <template>
-  <div class="mb-6 flex items-center justify-between layout-page-header">
+  <div class="mb-8 flex items-center justify-between layout-page-header">
     <div>
-      <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-50">{{ title }}</h2>
-      <p v-if="subtitle" class="text-sm text-gray-600 dark:text-gray-100 mt-1">{{ subtitle }}</p>
+      <h2 class="text-3xl font-bold tracking-tight text-white">{{ title }}</h2>
+      <p v-if="subtitle" class="text-base text-gray-400 mt-1">{{ subtitle }}</p>
     </div>
-    <div class="flex items-center space-x-2">
+    <div class="flex items-center space-x-3">
       <slot name="actions" />
     </div>
   </div>

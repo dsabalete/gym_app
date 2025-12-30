@@ -1,22 +1,25 @@
 <template>
   <tr class="exercises-set-row">
-    <td class="px-3 py-2 text-sm text-gray-900">
+    <td class="px-3 py-2 text-sm text-white">
       <input v-model="local.completed" type="checkbox"
-        class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500" @change="save" />
+        class="h-4 w-4 text-primary border-white/20 bg-white/5 rounded focus:ring-primary focus:ring-offset-background"
+        @change="save" />
     </td>
-    <td class="px-3 py-2 text-sm text-gray-900">
-      <span class="inline-block w-16 px-2 py-1">{{ set.setNumber }}</span>
+    <td class="px-3 py-2 text-sm text-white">
+      <span class="inline-block w-16 px-2 py-1 font-bold">{{ set.setNumber }}</span>
     </td>
-    <td class="px-3 py-2 text-sm text-gray-900">
-      <input v-model.number="local.reps" type="number" min="1" class="w-16 border rounded px-2 py-1" />
+    <td class="px-3 py-2 text-sm text-white">
+      <input v-model.number="local.reps" type="number" min="1"
+        class="w-16 border border-white/10 bg-white/5 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary text-center" />
     </td>
-    <td class="px-3 py-2 text-sm text-gray-900">
-      <input v-model.number="local.weight" type="number" step="0.5" min="0" class="w-20 border rounded px-2 py-1" />
+    <td class="px-3 py-2 text-sm text-white">
+      <input v-model.number="local.weight" type="number" step="0.5" min="0"
+        class="w-20 border border-white/10 bg-white/5 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary text-center" />
     </td>
-    <td class="flex items-center px-3 py-2 text-sm text-gray-900 align-middle">
-      <UiButton variant="secondary" size="sm" class="mr-2" @click="save">
-        <span v-if="props.saving" class="inline-flex items-center gap-2">
-          <svg class="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+    <td class="flex items-center px-3 py-2 text-sm text-gray-400 align-middle gap-2">
+      <UiButton variant="ghost" size="sm" @click="save">
+        <span v-if="props.saving" class="inline-flex items-center gap-2 text-primary">
+          <svg class="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
@@ -25,16 +28,14 @@
         </span>
         <span v-else>Save</span>
       </UiButton>
-      <UiButton variant="danger" size="sm" aria-label="Delete" @click="emit('remove', set)">
-        <span class="inline-flex items-center gap-2">
-          <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M9 3h6m-7 3h8m-9 0v13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6M10 10v8M14 10v8" />
-          </svg>
-          Delete
-        </span>
-      </UiButton>
+      <button class="text-red-400 hover:text-red-300 p-2 hover:bg-red-500/10 rounded transition-colors"
+        aria-label="Delete" @click="emit('remove', set)">
+        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 3h6m-7 3h8m-9 0v13a2 2 0 0 0 2 2h6a 2 2 0 0 0 2-2V6M10 10v8M14 10v8" />
+        </svg>
+      </button>
     </td>
   </tr>
 </template>

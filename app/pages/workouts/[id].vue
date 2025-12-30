@@ -9,11 +9,11 @@
     </LayoutPageHeader>
     <div v-if="loading" class="text-center py-8">
       <UiSkeleton class="mx-auto" width="240px" height="20px" />
-      <p class="text-gray-500 mt-2">Loading workout...</p>
+      <p class="text-gray-400 mt-2">Loading workout...</p>
     </div>
     <UiAlert v-else-if="error" type="error" :message="error" />
     <UiCard v-else-if="!workout">
-      <p class="text-gray-500">Workout not found.</p>
+      <p class="text-gray-400">Workout not found.</p>
     </UiCard>
     <div v-else class="space-y-6">
       <UiCard>
@@ -22,7 +22,7 @@
           <UiButton variant="primary" @click="updateDate">Save</UiButton>
           <UiButton v-if="isDev" variant="secondary" @click="runStressTest">Stress Test</UiButton>
         </div>
-        <p class="text-sm text-gray-500 mt-1">
+        <p class="text-sm text-gray-400 mt-1">
           {{ workout.exercises.length }} exercises • {{ totalSets }} sets
         </p>
         <div class="mt-4">

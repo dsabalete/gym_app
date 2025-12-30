@@ -8,6 +8,9 @@
   </div>
 </template>
 <script setup lang="ts">
+import { useAuth } from '~/composables/useAuth'
+import { useWorkouts } from '~/composables/useWorkouts'
+
 const { workouts, list } = useWorkouts()
 const { uid, ready } = useAuth()
 

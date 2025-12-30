@@ -13,13 +13,22 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af'
+          DEFAULT: '#2ed16c',
+          50: '#effef4',
+          100: '#d9fce6',
+          200: '#b5f8d0',
+          300: '#7ef0b0',
+          400: '#42e288',
+          500: '#2ed16c', // Main Brand Color
+          600: '#20aa54',
+          700: '#1d8645',
+          800: '#1d6a3b',
+          900: '#195734',
+          950: '#09311b',
+        },
+        background: {
+          DEFAULT: '#030e07', // Deepest background
+          light: '#0f1e16',   // Card background
         }
       }
     },

@@ -1,35 +1,38 @@
 <template>
   <UiCard class="ui-progress-chart p-4">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-      <h3 class="text-md font-semibold text-gray-900 dark:text-gray-100">Weekly Progress</h3>
-      <div class="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+      <h3 class="text-lg font-bold text-white uppercase tracking-wide">Weekly Progress</h3>
+      <div class="flex bg-white/5 p-1 rounded-lg border border-white/5">
         <button v-for="m in metrics" :key="m.id" @click="activeMetric = m.id" :class="[
-          'px-3 py-1.5 text-xs font-medium rounded-md transition-all',
+          'px-3 py-1.5 text-xs font-bold rounded-md transition-all uppercase tracking-wide',
           activeMetric === m.id
-            ? 'bg-white dark:bg-gray-700 text-primary-600 dark:text-primary-400 shadow-sm'
-            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            ? 'bg-primary text-background shadow-lg'
+            : 'text-gray-400 hover:text-white'
         ]">
           {{ m.label }}
         </button>
       </div>
     </div>
 
-    <div class="relative h-64 flex items-end justify-between gap-2 px-2">
+    <div class="relative h-64 flex items-end justify-between gap-2 px-2 mt-8">
       <div v-for="bar in bars" :key="bar.label" class="flex-1 flex flex-col items-center group">
         <div
-          class="relative w-full flex items-end justify-center h-48 bg-gray-50 dark:bg-gray-800/50 rounded-t-lg overflow-hidden">
+          class="relative w-full flex items-end justify-center h-48 bg-white/5 rounded-t-lg overflow-hidden border-b border-white/10">
           <div :style="{ height: `${bar.height}%` }"
-            class="w-full bg-primary-500/80 dark:bg-primary-600/80 transition-all duration-500 ease-out group-hover:bg-primary-500">
+            class="w-full bg-primary shadow-[0_0_10px_rgba(46,209,108,0.2)] transition-all duration-500 ease-out group-hover:bg-primary-400 group-hover:shadow-[0_0_15px_rgba(46,209,108,0.4)] relative">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-white/20"></div>
           </div>
           <!-- Tooltip -->
           <div
             class="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-            <div class="bg-gray-900 text-white text-[10px] py-1 px-2 rounded whitespace-nowrap shadow-xl">
+            <div
+              class="bg-background-light text-white text-[10px] font-bold py-1 px-2 rounded whitespace-nowrap shadow-xl border border-primary/20">
               {{ bar.raw }} {{metrics.find(m => m.id === activeMetric)?.label}}
             </div>
           </div>
         </div>
-        <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-2 font-medium truncate w-full text-center">
+        <p
+          class="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-wider truncate w-full text-center group-hover:text-primary transition-colors">
           {{ bar.label }}
         </p>
       </div>

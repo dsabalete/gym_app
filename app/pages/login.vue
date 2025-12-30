@@ -1,22 +1,19 @@
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md w-full space-y-8">
+    <div class="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-background-light p-8 rounded-3xl border border-white/5 shadow-2xl">
             <div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-                    Sign in to your account
+                <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-white uppercase">
+                    GymFlow
                 </h2>
-                <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-                    Or
-                    <a href="#" class="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400">
-                        continue as guest (if applicable)
-                    </a>
-                </p>
+                <h3 class="mt-2 text-center text-xl font-medium text-gray-400">
+                    Sign in to your account
+                </h3>
             </div>
             <div class="mt-8 space-y-6">
                 <button @click="handleLogin" :disabled="loading"
-                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-background bg-primary hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(46,209,108,0.3)] hover:shadow-[0_0_20px_rgba(46,209,108,0.5)]">
                     <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                        <svg class="h-5 w-5 text-primary-500 group-hover:text-primary-400"
+                        <svg class="h-5 w-5 text-background/70 group-hover:text-background"
                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                             aria-hidden="true">
                             <path fill-rule="evenodd"
@@ -32,6 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import { useAuth } from '~/composables/useAuth'
+
 definePageMeta({
     layout: false
 })

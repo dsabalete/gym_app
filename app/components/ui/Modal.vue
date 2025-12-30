@@ -1,12 +1,12 @@
 <template>
   <div v-if="open" class="ui-modal fixed inset-0 z-50">
-    <div class="absolute inset-0 bg-black/40" @click="emit('close')"></div>
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="emit('close')"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-lg">
-        <div class="p-4">
+      <div class="bg-background-light border border-white/10 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        <div class="p-6">
           <slot />
         </div>
-        <div v-if="$slots.footer" class="px-4 py-3 border-t dark:border-gray-700">
+        <div v-if="$slots.footer" class="px-6 py-4 bg-white/5 border-t border-white/10">
           <slot name="footer" />
         </div>
       </div>

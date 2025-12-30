@@ -1,6 +1,6 @@
 <template>
-  <div class="exercises-exercise-editor flex items-center gap-2">
-    <UiInput v-model="localName" placeholder="New exercise name" />
+  <div class="exercises-exercise-editor flex items-center gap-2 p-4 bg-background-light border border-white/5 rounded-xl">
+    <UiInput v-model="localName" placeholder="New exercise name" class="flex-1" />
     <UiButton variant="primary" @click="submit">Add Exercise</UiButton>
   </div>
 </template>
