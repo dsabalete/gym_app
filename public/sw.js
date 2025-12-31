@@ -25,6 +25,25 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event
   if (request.method !== 'GET') return
+
+  // Network-first strategy for navigation (HTML)
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy))
+          return response
+        })
+        .catch(() => {
+          return caches.match(request)
+            .then((cached) => cached || caches.match('/'))
+        })
+    )
+    return
+  }
+
+  // Cache-first strategy for assets
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached
@@ -37,7 +56,6 @@ self.addEventListener('fetch', (event) => {
           }
           return response
         })
-        .catch(() => caches.match('/'))
     })
   )
 })
