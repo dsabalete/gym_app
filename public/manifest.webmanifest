@@ -2,7 +2,7 @@
   "name": "Gym Workout Tracker",
   "short_name": "GymTracker",
   "description": "Track workouts, progress charts, and exercise history.",
-  "start_url": "/",
+  "start_url": "/login",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0b0b0b",

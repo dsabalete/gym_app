@@ -1,6 +1,7 @@
 const CACHE_NAME = 'gym-app-cache-v1'
 const PRECACHE_URLS = [
   '/',
+  '/login',
   '/manifest.webmanifest',
   '/favicon.svg'
 ]
