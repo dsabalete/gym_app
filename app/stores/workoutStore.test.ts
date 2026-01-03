@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useWorkoutStore } from '../app/stores/workoutStore'
-import type { Workout } from '../types/workout'
+import { useWorkoutStore } from './workoutStore'
+import type { Workout } from '~~/types/workout'
 
 
 
@@ -54,7 +54,7 @@ describe('workoutStore', () => {
 
             store.setWorkouts(secondSet)
             expect(store.workouts.length).toBe(1)
-            expect(store.workouts[0].id).toBe('2')
+            expect(store.workouts[0]!.id).toBe('2')
         })
     })
 
@@ -68,8 +68,8 @@ describe('workoutStore', () => {
             store.addWorkout(newWorkout)
 
             expect(store.workouts.length).toBe(2)
-            expect(store.workouts[0].id).toBe('2') // New workout should be first
-            expect(store.workouts[1].id).toBe('1')
+            expect(store.workouts[0]!.id).toBe('2') // New workout should be first
+            expect(store.workouts[1]!.id).toBe('1')
         })
 
         it('adds to empty array', () => {
@@ -99,8 +99,8 @@ describe('workoutStore', () => {
             }
             store.updateWorkout(updated)
 
-            expect(store.workouts[0].date).toBe('2024-01-03')
-            expect(store.workouts[0].exercises.length).toBe(1)
+            expect(store.workouts[0]!.date).toBe('2024-01-03')
+            expect(store.workouts[0]!.exercises.length).toBe(1)
         })
 
         it('updates currentWorkout if it matches', () => {
@@ -140,7 +140,7 @@ describe('workoutStore', () => {
             store.updateWorkout(updated)
 
             expect(store.workouts.length).toBe(1)
-            expect(store.workouts[0].id).toBe('1')
+            expect(store.workouts[0]!.id).toBe('1')
         })
     })
 
@@ -158,8 +158,8 @@ describe('workoutStore', () => {
 
             expect(store.workouts.length).toBe(2)
             expect(store.workouts.find((w: Workout) => w.id === '2')).toBeUndefined()
-            expect(store.workouts[0].id).toBe('1')
-            expect(store.workouts[1].id).toBe('3')
+            expect(store.workouts[0]!.id).toBe('1')
+            expect(store.workouts[1]!.id).toBe('3')
         })
 
         it('clears currentWorkout if it matches removed workout', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { useDebounce } from '../app/utils/debounce'
+import { useDebounce } from './debounce'
 
 describe('useDebounce', () => {
     beforeEach(() => {

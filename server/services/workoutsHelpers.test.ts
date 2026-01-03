@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { filterOutArchived, searchArchived } from '../server/services/workoutsHelpers'
+import { filterOutArchived, searchArchived } from './workoutsHelpers'
 
 describe('workoutsHelpers', () => {
   it('filters out archived workouts', () => {

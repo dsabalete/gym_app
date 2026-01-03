@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDateUTC, getUTCStartOfWeek, getUTCEndOfWeek, isDateInCurrentUTCWeek } from '../app/utils/date'
+import { formatDateUTC, getUTCStartOfWeek, getUTCEndOfWeek, isDateInCurrentUTCWeek } from './date'
 
 describe('date utilities', () => {
     describe('formatDateUTC', () => {
