@@ -14,7 +14,12 @@
       </div>
     </div>
 
-    <div class="relative h-64 flex items-end justify-between gap-2 px-2 mt-8">
+    <div v-if="allZero" class="h-48 flex items-center justify-center bg-white/5 rounded-lg border border-white/10">
+      <p class="text-sm text-gray-400 font-bold uppercase tracking-wide">
+        No hay datos de progreso en las últimas semanas
+      </p>
+    </div>
+    <div v-else class="relative h-64 flex items-end justify-between gap-2 px-2 mt-8">
       <div v-for="bar in bars" :key="bar.label" class="flex-1 flex flex-col items-center group">
         <span class="text-[10px] font-bold text-white mb-1 opacity-80 group-hover:opacity-100 transition-opacity">
           {{ bar.raw }}{{ activeMetric === 'volume' ? 'kg' : '' }}
@@ -41,6 +46,7 @@ import { getUTCStartOfWeek } from '~~/app/utils/date'
 
 const props = defineProps<{
   workouts: Workout[]
+  archivedOnly?: boolean
 }>()
 
 const activeMetric = ref('volume')
@@ -66,7 +72,9 @@ const bars = computed(() => {
 
     const weekWorkouts = props.workouts.filter(w => {
       const d = new Date(w.date)
-      return d >= start && d < end && !!w.archived
+      const inRange = d >= start && d < end
+      const archivedOk = (props.archivedOnly ?? true) ? !!w.archived : true
+      return inRange && archivedOk
     })
 
     let value = 0
@@ -96,4 +104,6 @@ const bars = computed(() => {
     height: Math.round((w.value / max) * 100)
   }))
 })
+
+const allZero = computed(() => bars.value.every(b => b.raw === '0'))
 </script>
