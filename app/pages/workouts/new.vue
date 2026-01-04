@@ -37,9 +37,11 @@
             <UiInput :id="`exercise-name-${exerciseIndex}`" v-model="exercise.name" type="text" label="Exercise Name"
               placeholder="e.g., Bench Press, Squats, Deadlifts" />
           </div>
-          <div class="mb-4">
+          <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
             <UiInput :id="`exercise-muscle-${exerciseIndex}`" v-model="exercise.primaryMuscle" type="text" label="Primary Muscle"
               placeholder="e.g., chest, quadriceps, posterior_chain" />
+            <UiInput :id="`exercise-secondary-${exerciseIndex}`" v-model="exercise.secondaryMuscle" type="text" label="Secondary Muscle"
+              placeholder="e.g., triceps, shoulders, hamstrings" />
           </div>
 
           <!-- Sets -->
@@ -98,7 +100,7 @@ import { useWorkouts } from '~/composables/useWorkouts'
 import { useAuth } from '~/composables/useAuth'
 
 const loading = ref<boolean>(false)
-const workout = ref<{ date: string; exercises: Array<{ id: number; name: string; primaryMuscle?: string | null; sets: Array<{ id: number; setNumber: number; reps: number; weight: number }> }> }>({
+const workout = ref<{ date: string; exercises: Array<{ id: number; name: string; primaryMuscle?: string | null; secondaryMuscle?: string | null; sets: Array<{ id: number; setNumber: number; reps: number; weight: number }> }> }>({
   date: '',
   exercises: []
 })
@@ -110,6 +112,7 @@ const addExercise = () => {
     id: Date.now(),
     name: '',
     primaryMuscle: '',
+    secondaryMuscle: '',
     sets: []
   })
 }
@@ -178,6 +181,7 @@ const saveWorkout = async () => {
       exercises: workout.value.exercises.map(exercise => ({
         name: exercise.name,
         primaryMuscle: (exercise.primaryMuscle || '').trim() || null,
+        secondaryMuscle: (exercise.secondaryMuscle || '').trim() || null,
         sets: exercise.sets.map(set => ({
           setNumber: set.setNumber,
           reps: set.reps,

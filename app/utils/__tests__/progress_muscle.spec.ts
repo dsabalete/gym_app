@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeExerciseSetsByWeek } from '../progress'
+import { computeMuscleSetsByWeek } from '../progress'
 
 function d(offsetDays: number): string {
   const now = new Date()
@@ -7,8 +7,8 @@ function d(offsetDays: number): string {
   return date.toISOString()
 }
 
-describe('computeExerciseSetsByWeek', () => {
-  it('agrupa sets completados en workouts archivados por ejercicio y semana', () => {
+describe('computeMuscleSetsByWeek', () => {
+  it('agrupa sets por músculo con 0.5 en secundarios', () => {
     const workouts = [
       {
         id: 'w1',
@@ -18,6 +18,8 @@ describe('computeExerciseSetsByWeek', () => {
           {
             id: 'e1',
             name: 'Bench',
+            primaryMuscle: 'Pecho',
+            secondaryMuscle: 'Tríceps',
             order: 0,
             sets: [
               { id: 's1', setNumber: 1, reps: 8, weight: 60, completed: true },
@@ -27,6 +29,7 @@ describe('computeExerciseSetsByWeek', () => {
           {
             id: 'e2',
             name: 'Squat',
+            primaryMuscle: 'Piernas',
             order: 1,
             sets: [{ id: 's3', setNumber: 1, reps: 5, weight: 100, completed: false }]
           }
@@ -39,22 +42,25 @@ describe('computeExerciseSetsByWeek', () => {
         exercises: [
           {
             id: 'e3',
-            name: 'Bench',
+            name: 'Overhead Press',
+            primaryMuscle: 'Hombros',
+            secondaryMuscle: 'Tríceps',
             order: 0,
-            sets: [{ id: 's4', setNumber: 1, reps: 6, weight: 62.5, completed: true }]
+            sets: [{ id: 's4', setNumber: 1, reps: 6, weight: 40, completed: true }]
           }
         ]
       }
     ] as any
 
-    const weeks = computeExerciseSetsByWeek(workouts, 2)
+    const weeks = computeMuscleSetsByWeek(workouts, 2)
     expect(weeks.length).toBe(2)
-    // Semana más antigua (hace ~9 días)
-    expect(weeks[0]!.totals['Bench']).toBe(1)
-    // Semana actual (~-2 días)
-    expect(weeks[1]!.totals['Bench']).toBe(2)
-    expect(weeks[1]!.totals['Squat']).toBeUndefined()
-    expect(weeks[1]!.totalSets).toBe(2)
+    expect(weeks[0]!.totals['Hombros']).toBe(1)
+    expect(weeks[0]!.totals['Tríceps']).toBe(0.5)
+    expect(weeks[0]!.totalSets).toBe(1.5)
+    expect(weeks[1]!.totals['Pecho']).toBe(2)
+    expect(weeks[1]!.totals['Tríceps']).toBe(1)
+    expect(weeks[1]!.totals['Piernas']).toBeUndefined()
+    expect(weeks[1]!.totalSets).toBe(3)
   })
 
   it('incluye workouts no archivados', () => {
@@ -67,6 +73,7 @@ describe('computeExerciseSetsByWeek', () => {
           {
             id: 'e',
             name: 'Deadlift',
+            primaryMuscle: 'Espalda',
             order: 0,
             sets: [{ id: 's', setNumber: 1, reps: 5, weight: 100, completed: true }]
           }
@@ -74,8 +81,8 @@ describe('computeExerciseSetsByWeek', () => {
       }
     ] as any
 
-    const weeks = computeExerciseSetsByWeek(workouts, 1)
+    const weeks = computeMuscleSetsByWeek(workouts, 1)
     expect(weeks[0]!.totalSets).toBe(1)
-    expect(weeks[0]!.totals['Deadlift']).toBe(1)
+    expect(weeks[0]!.totals['Espalda']).toBe(1)
   })
 })

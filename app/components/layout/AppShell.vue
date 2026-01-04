@@ -24,6 +24,9 @@
               <NuxtLink to="/workouts"
                 class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
                 active-class="text-primary bg-primary/10">Workouts</NuxtLink>
+              <NuxtLink to="/exercises"
+                class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                active-class="text-primary bg-primary/10">Exercises</NuxtLink>
               <NuxtLink to="/progress"
                 class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
                 active-class="text-primary bg-primary/10">Progress</NuxtLink>
@@ -72,6 +75,10 @@
           class="block px-3 py-2 rounded-lg text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white"
           active-class="text-primary bg-primary/10">
           Workouts</NuxtLink>
+        <NuxtLink to="/exercises"
+          class="block px-3 py-2 rounded-lg text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white"
+          active-class="text-primary bg-primary/10">
+          Exercises</NuxtLink>
         <NuxtLink to="/progress"
           class="block px-3 py-2 rounded-lg text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white"
           active-class="text-primary bg-primary/10">

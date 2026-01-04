@@ -32,10 +32,10 @@ const stats = computed(() => {
   const thisWeekStart = getUTCStartOfWeek(new Date(), 1)
   const lastWeekStart = new Date(thisWeekStart.getTime() - weekMs)
 
-  const thisWeekWorkouts = props.workouts.filter(w => new Date(w.date) >= thisWeekStart && !!w.archived)
+  const thisWeekWorkouts = props.workouts.filter(w => new Date(w.date) >= thisWeekStart)
   const lastWeekWorkouts = props.workouts.filter(w => {
     const d = new Date(w.date)
-    return d >= lastWeekStart && d < thisWeekStart && !!w.archived
+    return d >= lastWeekStart && d < thisWeekStart
   })
 
   const getMetrics = (workouts: Workout[]) => {

@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
         id: randomUUID(),
         name: ex.name,
         primaryMuscle: ex.primaryMuscle ?? null,
+        secondaryMuscle: ex.secondaryMuscle ?? null,
         order: index,
         createdAt: new Date().toISOString(),
         sets: (ex.sets || []).map((set: any) => ({

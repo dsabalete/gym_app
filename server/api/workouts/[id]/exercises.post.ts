@@ -9,6 +9,8 @@ export default defineEventHandler(async (event) => {
     const name = String(body?.name || '').trim()
     const primaryMuscleRaw = String(body?.primaryMuscle || '').trim()
     const primaryMuscle = primaryMuscleRaw.length > 0 ? primaryMuscleRaw : null
+    const secondaryMuscleRaw = String(body?.secondaryMuscle || '').trim()
+    const secondaryMuscle = secondaryMuscleRaw.length > 0 ? secondaryMuscleRaw : null
 
     if (!workoutId || !userId) {
       throw createError({ statusCode: 400, statusMessage: 'Workout ID and User ID are required' })
@@ -30,6 +32,7 @@ export default defineEventHandler(async (event) => {
       id: exerciseId,
       name,
       primaryMuscle,
+      secondaryMuscle,
       order: exercises.length,
       sets: [],
       createdAt: new Date().toISOString()

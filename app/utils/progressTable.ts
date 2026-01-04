@@ -7,6 +7,12 @@ export interface ExerciseWeeklyTableData {
   data: number[][]
 }
 
+export interface MuscleWeeklyTableData {
+  weekLabels: string[]
+  muscleNames: string[]
+  data: number[][]
+}
+
 export function computeCompletedSetsTable(
   workouts: Workout[],
   weeksCount: number = 8,
@@ -53,6 +59,62 @@ export function computeCompletedSetsTable(
   })
 
   return { weekLabels, exerciseNames, data }
+}
+
+export function computeCompletedMuscleSetsTable(
+  workouts: Workout[],
+  weeksCount: number = 8,
+  archivedOnly: boolean = true
+): MuscleWeeklyTableData {
+  const now = new Date()
+  const currentWeekStart = getUTCStartOfWeek(now, 1)
+  const weekMs = 7 * 24 * 60 * 60 * 1000
+
+  const weekRanges = Array.from({ length: weeksCount }).map((_, i) => {
+    const start = new Date(currentWeekStart.getTime() - (weeksCount - 1 - i) * weekMs)
+    const end = new Date(start.getTime() + weekMs)
+    const label = `${start.getUTCMonth() + 1}/${start.getUTCDate()}`
+    return { start, end, label }
+  })
+
+  const muscleSet = new Set<string>()
+  const perWeekTotals: Array<Record<string, number>> = weekRanges.map(({ start, end }) => {
+    const totals: Record<string, number> = {}
+    const weekWorkouts = workouts.filter(w => {
+      const d = new Date(w.date)
+      const inRange = d >= start && d < end
+      const archivedOk = archivedOnly ? !!w.archived : true
+      return inRange && archivedOk
+    })
+    weekWorkouts.forEach(w => {
+      w.exercises.forEach(e => {
+        e.sets.forEach(s => {
+          if (s.completed) {
+            const pm = e.primaryMuscle?.trim() || null
+            const sm = e.secondaryMuscle?.trim() || null
+            if (pm) {
+              totals[pm] = (totals[pm] ?? 0) + 1
+              muscleSet.add(pm)
+            }
+            if (sm) {
+              totals[sm] = (totals[sm] ?? 0) + 0.5
+              muscleSet.add(sm)
+            }
+          }
+        })
+      })
+    })
+    return totals
+  })
+
+  const muscleNames = Array.from(muscleSet).sort()
+  const weekLabels = weekRanges.map(w => w.label)
+
+  const data = muscleNames.map(name => {
+    return perWeekTotals.map(t => t[name] ?? 0)
+  })
+
+  return { weekLabels, muscleNames, data }
 }
 
 export function computeAllExercisesWeeklyTable(
