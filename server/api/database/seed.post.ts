@@ -9,6 +9,7 @@ export default defineEventHandler(async (event) => {
   const exercises = body?.exercises || [
     {
       name: 'Bench Press',
+      primaryMuscle: 'chest',
       sets: [
         { setNumber: 1, reps: 8, weight: 80 },
         { setNumber: 2, reps: 8, weight: 80 },
@@ -17,6 +18,7 @@ export default defineEventHandler(async (event) => {
     },
     {
       name: 'Squat',
+      primaryMuscle: 'quadriceps',
       sets: [
         { setNumber: 1, reps: 5, weight: 100 },
         { setNumber: 2, reps: 5, weight: 100 },
@@ -25,6 +27,7 @@ export default defineEventHandler(async (event) => {
     },
     {
       name: 'Deadlift',
+      primaryMuscle: 'posterior_chain',
       sets: [
         { setNumber: 1, reps: 5, weight: 120 },
         { setNumber: 2, reps: 5, weight: 120 }
@@ -46,7 +49,7 @@ export default defineEventHandler(async (event) => {
       for (const ex of exercises) {
         const exerciseId = crypto.randomUUID()
         const exerciseRef = workoutRef.collection('exercises').doc(exerciseId)
-        tx.set(exerciseRef, { id: exerciseId, name: ex.name, createdAt: new Date().toISOString() })
+        tx.set(exerciseRef, { id: exerciseId, name: ex.name, primaryMuscle: ex.primaryMuscle ?? null, createdAt: new Date().toISOString() })
         for (const set of ex.sets) {
           const setId = crypto.randomUUID()
           const setRef = exerciseRef.collection('sets').doc(setId)

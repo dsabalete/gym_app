@@ -54,3 +54,60 @@ export function computeCompletedSetsTable(
 
   return { weekLabels, exerciseNames, data }
 }
+
+export function computeAllExercisesWeeklyTable(
+  workouts: Workout[],
+  weeksCount: number = 8,
+  archivedOnly: boolean = true
+): ExerciseWeeklyTableData {
+  const now = new Date()
+  const currentWeekStart = getUTCStartOfWeek(now, 1)
+  const weekMs = 7 * 24 * 60 * 60 * 1000
+
+  const weekRanges = Array.from({ length: weeksCount }).map((_, i) => {
+    const start = new Date(currentWeekStart.getTime() - (weeksCount - 1 - i) * weekMs)
+    const end = new Date(start.getTime() + weekMs)
+    const label = `${start.getUTCMonth() + 1}/${start.getUTCDate()}`
+    return { start, end, label }
+  })
+
+  // 1. Collect ALL exercise names from ALL provided workouts (not just within the time window)
+  const exerciseSet = new Set<string>()
+  workouts.forEach(w => {
+    // If archivedOnly is true, should we consider exercises from non-archived workouts?
+    // "todos los ejercicios que hay en la base de datos" implies all known exercises.
+    // But usually we care about completed exercises if we talk about sets.
+    // Let's include all exercises found in any workout passed to us.
+    w.exercises.forEach(e => exerciseSet.add(e.name))
+  })
+
+  const exerciseNames = Array.from(exerciseSet).sort()
+  const weekLabels = weekRanges.map(w => w.label)
+
+  // 2. Compute totals per week
+  const perWeekTotals: Array<Record<string, number>> = weekRanges.map(({ start, end }) => {
+    const totals: Record<string, number> = {}
+    const weekWorkouts = workouts.filter(w => {
+      const d = new Date(w.date)
+      const inRange = d >= start && d < end
+      const archivedOk = archivedOnly ? !!w.archived : true
+      return inRange && archivedOk
+    })
+    weekWorkouts.forEach(w => {
+      w.exercises.forEach(e => {
+        e.sets.forEach(s => {
+          if (s.completed) {
+            totals[e.name] = (totals[e.name] ?? 0) + 1
+          }
+        })
+      })
+    })
+    return totals
+  })
+
+  const data = exerciseNames.map(name => {
+    return perWeekTotals.map(t => t[name] ?? 0)
+  })
+
+  return { weekLabels, exerciseNames, data }
+}

@@ -32,6 +32,7 @@ export default defineEventHandler(async (event) => {
       const flattenedExercises = exercises.map((ex: any, index: number) => ({
         id: randomUUID(),
         name: ex.name,
+        primaryMuscle: ex.primaryMuscle ?? null,
         order: index,
         createdAt: new Date().toISOString(),
         sets: (ex.sets || []).map((set: any) => ({

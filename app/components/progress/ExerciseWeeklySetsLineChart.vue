@@ -3,14 +3,16 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
       <h3 class="text-lg font-bold text-white uppercase tracking-wide">Sets by Exercise (Weekly)</h3>
       <div class="flex flex-wrap gap-2">
-        <div v-for="ex in exerciseNames" :key="ex" class="flex items-center gap-2 px-2 py-1 rounded bg-white/5 border border-white/10">
+        <div v-for="ex in exerciseNames" :key="ex"
+          class="flex items-center gap-2 px-2 py-1 rounded bg-white/5 border border-white/10">
           <span class="w-3 h-3 rounded-sm" :style="{ backgroundColor: colorFor(ex) }"></span>
           <span class="text-xs font-bold text-gray-300 uppercase tracking-wide">{{ ex }}</span>
         </div>
       </div>
     </div>
 
-    <div v-if="totalAllSets === 0" class="h-48 flex items-center justify-center bg-white/5 rounded-lg border border-white/10">
+    <div v-if="totalAllSets === 0"
+      class="h-48 flex items-center justify-center bg-white/5 rounded-lg border border-white/10">
       <p class="text-sm text-gray-400 font-bold uppercase tracking-wide">
         No hay datos de sets completados en las últimas semanas
       </p>
@@ -20,57 +22,30 @@
         <svg :viewBox="`0 0 ${svgWidth} ${svgHeight}`" class="w-full h-full">
           <rect x="0" y="0" :width="svgWidth" :height="svgHeight" fill="transparent"></rect>
           <g>
-            <line :x1="paddingLeft" :y1="svgHeight - paddingBottom" :x2="svgWidth - paddingRight" :y2="svgHeight - paddingBottom" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
-            <line :x1="paddingLeft" :y1="paddingTop" :x2="paddingLeft" :y2="svgHeight - paddingBottom" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+            <line :x1="paddingLeft" :y1="svgHeight - paddingBottom" :x2="svgWidth - paddingRight"
+              :y2="svgHeight - paddingBottom" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+            <line :x1="paddingLeft" :y1="paddingTop" :x2="paddingLeft" :y2="svgHeight - paddingBottom"
+              stroke="rgba(255,255,255,0.2)" stroke-width="1" />
           </g>
           <g>
-            <template v-for="i in yTicks">
-              <line
-                :key="`grid-${i}`"
-                :x1="paddingLeft"
-                :y1="yToCoord(i)"
-                :x2="svgWidth - paddingRight"
-                :y2="yToCoord(i)"
-                stroke="rgba(255,255,255,0.08)"
-                stroke-width="1"
-              />
-              <text
-                :key="`label-${i}`"
-                :x="paddingLeft - 6"
-                :y="yToCoord(i) - 2"
-                text-anchor="end"
-                class="fill-gray-400"
-                style="font-size:10px;font-weight:700"
-              >{{ i }}</text>
+            <template v-for="i in yTicks" :key="`ytick-${i}`">
+              <line :x1="paddingLeft" :y1="yToCoord(i)" :x2="svgWidth - paddingRight" :y2="yToCoord(i)"
+                stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+              <text :x="paddingLeft - 6" :y="yToCoord(i) - 2" text-anchor="end" class="fill-gray-400"
+                style="font-size:10px;font-weight:700">{{ i }}</text>
             </template>
           </g>
           <g>
-            <template v-for="(lbl, idx) in weekLabels">
-              <text
-                :key="`x-${idx}`"
-                :x="xToCoord(idx)"
-                :y="svgHeight - paddingBottom + 12"
-                text-anchor="middle"
-                class="fill-gray-500"
-                style="font-size:10px;font-weight:700"
-              >{{ lbl }}</text>
+            <template v-for="(lbl, idx) in weekLabels" :key="`x-${idx}`">
+              <text :x="xToCoord(idx)" :y="svgHeight - paddingBottom + 12" text-anchor="middle" class="fill-gray-500"
+                style="font-size:10px;font-weight:700">{{ lbl }}</text>
             </template>
           </g>
           <g v-for="series in seriesData" :key="series.name">
-            <polyline
-              :points="series.points.map(p => `${p.x},${p.y}`).join(' ')"
-              :fill="`none`"
-              :stroke="colorFor(series.name)"
-              stroke-width="2"
-            />
-            <circle
-              v-for="(p, i) in series.points"
-              :key="`pt-${series.name}-${i}`"
-              :cx="p.x"
-              :cy="p.y"
-              r="2.5"
-              :fill="colorFor(series.name)"
-            />
+            <polyline :points="series.points.map(p => `${p.x},${p.y}`).join(' ')" :fill="`none`"
+              :stroke="colorFor(series.name)" stroke-width="2" />
+            <circle v-for="(p, i) in series.points" :key="`pt-${series.name}-${i}`" :cx="p.x" :cy="p.y" r="2.5"
+              :fill="colorFor(series.name)" />
           </g>
         </svg>
       </div>
@@ -166,4 +141,3 @@ const seriesData = computed(() => {
   })
 })
 </script>
-

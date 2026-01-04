@@ -37,6 +37,10 @@
             <UiInput :id="`exercise-name-${exerciseIndex}`" v-model="exercise.name" type="text" label="Exercise Name"
               placeholder="e.g., Bench Press, Squats, Deadlifts" />
           </div>
+          <div class="mb-4">
+            <UiInput :id="`exercise-muscle-${exerciseIndex}`" v-model="exercise.primaryMuscle" type="text" label="Primary Muscle"
+              placeholder="e.g., chest, quadriceps, posterior_chain" />
+          </div>
 
           <!-- Sets -->
           <div class="space-y-3">
@@ -94,7 +98,7 @@ import { useWorkouts } from '~/composables/useWorkouts'
 import { useAuth } from '~/composables/useAuth'
 
 const loading = ref<boolean>(false)
-const workout = ref<{ date: string; exercises: Array<{ id: number; name: string; sets: Array<{ id: number; setNumber: number; reps: number; weight: number }> }> }>({
+const workout = ref<{ date: string; exercises: Array<{ id: number; name: string; primaryMuscle?: string | null; sets: Array<{ id: number; setNumber: number; reps: number; weight: number }> }> }>({
   date: '',
   exercises: []
 })
@@ -105,6 +109,7 @@ const addExercise = () => {
   workout.value.exercises.push({
     id: Date.now(),
     name: '',
+    primaryMuscle: '',
     sets: []
   })
 }
@@ -172,6 +177,7 @@ const saveWorkout = async () => {
       date: workout.value.date,
       exercises: workout.value.exercises.map(exercise => ({
         name: exercise.name,
+        primaryMuscle: (exercise.primaryMuscle || '').trim() || null,
         sets: exercise.sets.map(set => ({
           setNumber: set.setNumber,
           reps: set.reps,

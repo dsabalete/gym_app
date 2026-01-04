@@ -3,8 +3,9 @@
     <LayoutPageHeader title="Progress" />
     <ProgressSummary :workouts="workouts" />
     <ProgressChart :workouts="workouts" :archived-only="archivedOnly" />
-    <ExerciseWeeklySetsLineChart :workouts="workouts" :archived-only="archivedOnly" class="mt-6" />
-    <ExerciseWeeklySetsTable :workouts="workouts" :archived-only="archivedOnly" class="mt-6" />
+    <ProgressWeeklyExercisesList :workouts="workouts" :archived-only="archivedOnly" class="mt-6" />
+    <ProgressExerciseWeeklySetsLineChart :workouts="workouts" :archived-only="archivedOnly" class="mt-6" />
+    <ProgressExerciseWeeklySetsTable :workouts="workouts" :archived-only="archivedOnly" class="mt-6" />
     <div class="flex bg-white/5 p-1 rounded-lg border border-white/5 max-w-xs mt-6">
       <button @click="archivedOnly = true" :class="[
         'px-3 py-1.5 text-xs font-bold rounded-md transition-all uppercase tracking-wide',

@@ -9,6 +9,7 @@ export interface ExerciseSet {
 export interface Exercise {
   id: string
   name: string
+  primaryMuscle?: string | null
   order: number
   sets: ExerciseSet[]
 }
