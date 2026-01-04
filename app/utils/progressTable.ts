@@ -77,6 +77,19 @@ export function computeCompletedMuscleSetsTable(
     return { start, end, label }
   })
 
+  const nameToMuscle: Record<string, { primary?: string | null; secondary?: string | null }> = {}
+  workouts.forEach(w => {
+    w.exercises.forEach(e => {
+      const key = String(e.name || '').trim()
+      if (!key) return
+      const pm = e.primaryMuscle?.trim() || null
+      const sm = e.secondaryMuscle?.trim() || null
+      if (!nameToMuscle[key]) nameToMuscle[key] = {}
+      if (pm) nameToMuscle[key].primary = pm
+      if (sm) nameToMuscle[key].secondary = sm
+    })
+  })
+
   const muscleSet = new Set<string>()
   const perWeekTotals: Array<Record<string, number>> = weekRanges.map(({ start, end }) => {
     const totals: Record<string, number> = {}
@@ -90,8 +103,9 @@ export function computeCompletedMuscleSetsTable(
       w.exercises.forEach(e => {
         e.sets.forEach(s => {
           if (s.completed) {
-            const pm = e.primaryMuscle?.trim() || null
-            const sm = e.secondaryMuscle?.trim() || null
+            const lookup = nameToMuscle[String(e.name || '').trim()]
+            const pm = e.primaryMuscle?.trim() || lookup?.primary?.trim() || null
+            const sm = e.secondaryMuscle?.trim() || lookup?.secondary?.trim() || null
             if (pm) {
               totals[pm] = (totals[pm] ?? 0) + 1
               muscleSet.add(pm)

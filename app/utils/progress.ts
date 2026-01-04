@@ -52,7 +52,11 @@ export interface MuscleWeekSets {
   totalSets: number
 }
 
-export function computeMuscleSetsByWeek(workouts: Workout[], weeksCount: number = 8): MuscleWeekSets[] {
+export function computeMuscleSetsByWeek(
+  workouts: Workout[],
+  weeksCount: number = 8,
+  exerciseMuscleMap?: Record<string, { primary?: string | null; secondary?: string | null }>
+): MuscleWeekSets[] {
   const now = new Date()
   const currentWeekStart = getUTCStartOfWeek(now, 1)
   const weekMs = 7 * 24 * 60 * 60 * 1000
@@ -73,8 +77,11 @@ export function computeMuscleSetsByWeek(workouts: Workout[], weeksCount: number 
       w.exercises.forEach(e => {
         e.sets.forEach(s => {
           if (s.completed) {
-            const pm = e.primaryMuscle?.trim() || null
-            const sm = e.secondaryMuscle?.trim() || null
+            const pmDirect = e.primaryMuscle?.trim() || null
+            const smDirect = e.secondaryMuscle?.trim() || null
+            const lookup = exerciseMuscleMap?.[String(e.name || '').trim()]
+            const pm = pmDirect ?? (lookup?.primary?.trim() || null)
+            const sm = smDirect ?? (lookup?.secondary?.trim() || null)
             if (pm) {
               totals[pm] = (totals[pm] ?? 0) + 1
             }

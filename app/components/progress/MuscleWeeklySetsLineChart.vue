@@ -62,11 +62,27 @@ const props = defineProps<{
   archivedOnly?: boolean
 }>()
 
+const exerciseMuscleMap = computed<Record<string, { primary?: string | null; secondary?: string | null }>>(() => {
+  const map: Record<string, { primary?: string | null; secondary?: string | null }> = {}
+  props.workouts.forEach(w => {
+    w.exercises.forEach(e => {
+      const key = String(e.name || '').trim()
+      if (!key) return
+      const pm = e.primaryMuscle?.trim() || null
+      const sm = e.secondaryMuscle?.trim() || null
+      if (!map[key]) map[key] = {}
+      if (pm) map[key].primary = pm
+      if (sm) map[key].secondary = sm
+    })
+  })
+  return map
+})
+
 const weeks = computed(() => {
   const source = (props.archivedOnly ?? true)
     ? props.workouts.filter(w => !!w.archived)
     : props.workouts
-  return computeMuscleSetsByWeek(source, 8)
+  return computeMuscleSetsByWeek(source, 8, exerciseMuscleMap.value)
 })
 
 const muscleNames = computed(() => {
