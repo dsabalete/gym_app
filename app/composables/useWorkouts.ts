@@ -1,6 +1,8 @@
 import { useWorkoutStore } from '~/stores/workoutStore'
 import { storeToRefs } from 'pinia'
 import type { Workout } from '~~/types/workout'
+import type { Exercise } from '~~/types/exercise'
+import { increaseRepsForExercises } from '~/utils/workoutCopy'
 
 export function useWorkouts() {
   const store = useWorkoutStore()
@@ -207,10 +209,14 @@ export function useWorkouts() {
     }
   }
 
-  async function copy(userId: string, sourceWorkout: Workout, newDate: string) {
+  async function copy(userId: string, sourceWorkout: Workout, newDate: string, options?: { incrementRepsByOne?: boolean }) {
+    const shouldInc = options?.incrementRepsByOne === true
+    const exercises: Exercise[] = shouldInc
+      ? increaseRepsForExercises(sourceWorkout.exercises, 1)
+      : sourceWorkout.exercises
     return await create(userId, {
       date: newDate,
-      exercises: sourceWorkout.exercises
+      exercises
     })
   }
 

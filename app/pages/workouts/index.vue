@@ -30,6 +30,11 @@
         Select the target date for the copied workout.
       </p>
       <UiInput v-model="targetDate" label="Target Date" type="date" />
+      <div class="mt-4 flex items-center space-x-2">
+        <input id="increaseReps" type="checkbox" :checked="increaseRepsOne" @change="increaseRepsOne = ($event.target as HTMLInputElement).checked"
+          class="h-4 w-4 rounded border border-white/20 bg-white/5 text-primary focus:ring-primary" />
+        <label for="increaseReps" class="text-sm text-gray-300">Increase reps by +1 per set</label>
+      </div>
       <template #footer>
         <div class="flex justify-end space-x-3">
           <UiButton variant="ghost" @click="isCopyModalOpen = false">Cancel</UiButton>
@@ -52,6 +57,7 @@ const isCopyModalOpen = ref(false)
 const selectedWorkout = ref<any>(null)
 const targetDate = ref(new Date().toISOString().split('T')[0])
 const copying = ref(false)
+const increaseRepsOne = ref(false)
 
 // Use the new lazy-loading fetch mechanism
 const { status, error: fetchError } = useWorkoutsFetch(uid)
@@ -104,8 +110,9 @@ const confirmCopy = async () => {
 
   try {
     copying.value = true
-    await copy(uid.value, selectedWorkout.value, targetDate.value)
+    await copy(uid.value, selectedWorkout.value, targetDate.value, { incrementRepsByOne: increaseRepsOne.value })
     isCopyModalOpen.value = false
+    increaseRepsOne.value = false
   } catch (error) {
     console.error('Error copying workout:', error)
     alert('Failed to copy workout')
