@@ -113,6 +113,8 @@ const confirmCopy = async () => {
     await copy(uid.value, selectedWorkout.value, targetDate.value, { incrementRepsByOne: increaseRepsOne.value })
     isCopyModalOpen.value = false
     increaseRepsOne.value = false
+    const refreshLimit = Math.max(workouts.value.length, 10)
+    await list(uid.value, refreshLimit)
   } catch (error) {
     console.error('Error copying workout:', error)
     alert('Failed to copy workout')

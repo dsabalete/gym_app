@@ -2,8 +2,8 @@
   <div class="px-4 py-6 sm:px-0">
     <LayoutPageHeader title="New Workout">
       <template #actions>
-        <NuxtLink to="/">
-          <UiButton variant="secondary">Back to Dashboard</UiButton>
+        <NuxtLink to="/workouts">
+          <UiButton variant="secondary">Back to Workouts</UiButton>
         </NuxtLink>
       </template>
     </LayoutPageHeader>
@@ -86,7 +86,7 @@
 
       <!-- Submit Button -->
       <div class="flex justify-end space-x-4">
-        <NuxtLink to="/">
+        <NuxtLink to="/workouts">
           <UiButton variant="secondary">Cancel</UiButton>
         </NuxtLink>
         <UiButton type="submit" :loading="loading" variant="primary">Save Workout</UiButton>

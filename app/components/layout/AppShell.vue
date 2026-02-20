@@ -12,15 +12,11 @@
               </svg>
             </div>
             <h1 class="text-xl font-bold tracking-tight text-white uppercase">
-              <NuxtLink to="/">GymFlow</NuxtLink>
+              <NuxtLink to="/workouts">GymFlow</NuxtLink>
             </h1>
           </div>
           <div class="flex items-center">
             <div class="hidden md:flex items-center space-x-1">
-              <NuxtLink to="/"
-                class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
-                active-class="text-primary bg-primary/10">
-                Dashboard</NuxtLink>
               <NuxtLink to="/workouts"
                 class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
                 active-class="text-primary bg-primary/10">Workouts</NuxtLink>
@@ -67,10 +63,6 @@
     <div id="mobile-menu" class="md:hidden bg-background/95 backdrop-blur-xl border-b border-white/10"
       v-if="mobileOpen">
       <div class="px-4 py-3 space-y-1">
-        <NuxtLink to="/"
-          class="block px-3 py-2 rounded-lg text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white"
-          active-class="text-primary bg-primary/10">
-          Dashboard</NuxtLink>
         <NuxtLink to="/workouts"
           class="block px-3 py-2 rounded-lg text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white"
           active-class="text-primary bg-primary/10">
