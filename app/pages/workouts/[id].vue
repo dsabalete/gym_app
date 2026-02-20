@@ -33,6 +33,27 @@
         @save-set="saveSet" @remove-set="removeSet" @remove-exercise="removeExercise"
         @reorder-exercise="onReorderExercise" />
     </div>
+
+    <UiModal :open="confirmOpen" @close="confirmOpen = false">
+      <h3 class="text-lg font-bold text-white uppercase tracking-wide mb-4">{{ confirmTitle }}</h3>
+      <p class="text-sm text-gray-400 mb-6">{{ confirmMessage }}</p>
+      <template #footer>
+        <div class="flex justify-end space-x-3">
+          <UiButton variant="ghost" :disabled="confirming" @click="confirmOpen = false">Cancel</UiButton>
+          <UiButton variant="primary" :loading="confirming" @click="runConfirm">{{ confirmLabel }}</UiButton>
+        </div>
+      </template>
+    </UiModal>
+
+    <UiModal :open="alertOpen" @close="alertOpen = false">
+      <h3 class="text-lg font-bold text-white uppercase tracking-wide mb-4">{{ alertTitle }}</h3>
+      <p class="text-sm text-gray-400 mb-6">{{ alertMessage }}</p>
+      <template #footer>
+        <div class="flex justify-end">
+          <UiButton variant="primary" @click="alertOpen = false">OK</UiButton>
+        </div>
+      </template>
+    </UiModal>
   </div>
 </template>
 
@@ -52,11 +73,46 @@ const newExerciseName = ref<string>('')
 const editableDate = ref<string>('')
 const savingSetIds = ref<Set<string>>(new Set())
 const debouncedSaves = new Map<string, ReturnType<typeof useDebounce>>()
+const alertOpen = ref(false)
+const alertTitle = ref('')
+const alertMessage = ref('')
+const confirmOpen = ref(false)
+const confirmTitle = ref('')
+const confirmMessage = ref('')
+const confirmLabel = ref('Confirm')
+const confirming = ref(false)
+const confirmAction = ref<null | (() => Promise<void> | void)>(null)
 
 const { uid, ready } = useAuth()
 const { getById, workout, updateDate: updateWorkoutDate } = useWorkouts()
 const editor = useWorkoutEditor()
 const isDev = import.meta.dev
+
+const openAlert = (message: string, title = 'Something went wrong') => {
+  alertTitle.value = title
+  alertMessage.value = message
+  alertOpen.value = true
+}
+
+const openConfirm = (options: { title: string; message: string; confirmLabel?: string; onConfirm: () => Promise<void> | void }) => {
+  confirmTitle.value = options.title
+  confirmMessage.value = options.message
+  confirmLabel.value = options.confirmLabel || 'Confirm'
+  confirmAction.value = options.onConfirm
+  confirmOpen.value = true
+}
+
+const runConfirm = async () => {
+  const action = confirmAction.value
+  if (!action || confirming.value) return
+  try {
+    confirming.value = true
+    await action()
+    confirmOpen.value = false
+  } finally {
+    confirming.value = false
+  }
+}
 
 const fetchWorkout = async () => {
   try {
@@ -96,7 +152,7 @@ const updateDate = async () => {
     await updateWorkoutDate(uid.value, workout.value.id, editableDate.value)
   } catch (err) {
     console.error('Error updating date:', err)
-    alert('Failed to update date')
+    openAlert('Failed to update date')
   }
 }
 
@@ -108,7 +164,7 @@ const addSet = async (exercise: Exercise) => {
     await editor.addSet(uid.value, workout.value.id, exercise.id)
   } catch (err) {
     console.error('Error adding set:', err)
-    alert('Failed to add set')
+    openAlert('Failed to add set')
   }
 }
 
@@ -139,21 +195,27 @@ const saveSet = async (payload: { set: ExerciseSet; exerciseId: string }) => {
     debouncedSaves.get(key)!(set)
   } catch (err) {
     console.error('Error saving set:', err)
-    alert('Failed to save set')
+    openAlert('Failed to save set')
   }
 }
 
 const removeSet = async (payload: { set: ExerciseSet; exerciseId: string }) => {
-  if (!confirm('Delete this set?')) return
-  try {
-    if (!workout.value) return
-    await ready
-    if (!uid.value) return
-    await editor.removeSet(uid.value, workout.value.id, payload.exerciseId, payload.set.id)
-  } catch (err) {
-    console.error('Error deleting set:', err)
-    alert('Failed to delete set')
-  }
+  openConfirm({
+    title: 'Delete set',
+    message: 'Delete this set?',
+    confirmLabel: 'Delete',
+    onConfirm: async () => {
+      try {
+        if (!workout.value) return
+        await ready
+        if (!uid.value) return
+        await editor.removeSet(uid.value, workout.value.id, payload.exerciseId, payload.set.id)
+      } catch (err) {
+        console.error('Error deleting set:', err)
+        openAlert('Failed to delete set')
+      }
+    }
+  })
 }
 
 onMounted(() => {
@@ -162,7 +224,7 @@ onMounted(() => {
 
 const onAddExercise = async (name: string) => {
   if (!name) {
-    alert('Please enter an exercise name')
+    openAlert('Please enter an exercise name', 'Validation')
     return
   }
   try {
@@ -172,21 +234,27 @@ const onAddExercise = async (name: string) => {
     await editor.addExercise(uid.value, workout.value.id, name)
   } catch (err) {
     console.error('Error adding exercise:', err)
-    alert('Failed to add exercise')
+    openAlert('Failed to add exercise')
   }
 }
 
 const removeExercise = async (exercise: Exercise) => {
-  if (!confirm(`Remove exercise "${exercise.name}"? This will delete its sets.`)) return
-  try {
-    if (!workout.value) return
-    await ready
-    if (!uid.value) return
-    await editor.removeExercise(uid.value, workout.value.id, exercise.id)
-  } catch (err) {
-    console.error('Error removing exercise:', err)
-    alert('Failed to remove exercise')
-  }
+  openConfirm({
+    title: 'Remove exercise',
+    message: `Remove exercise "${exercise.name}"? This will delete its sets.`,
+    confirmLabel: 'Remove',
+    onConfirm: async () => {
+      try {
+        if (!workout.value) return
+        await ready
+        if (!uid.value) return
+        await editor.removeExercise(uid.value, workout.value.id, exercise.id)
+      } catch (err) {
+        console.error('Error removing exercise:', err)
+        openAlert('Failed to remove exercise')
+      }
+    }
+  })
 }
 
 const onReorderExercise = async (payload: { exercise: Exercise; index: number; direction: 'up' | 'down' }) => {
@@ -208,7 +276,7 @@ const onReorderExercise = async (payload: { exercise: Exercise; index: number; d
     await editor.updateExerciseOrder(uid.value, workout.value.id, newExercises)
   } catch (err) {
     console.error('Error reordering exercise:', err)
-    alert('Failed to reorder exercise')
+    openAlert('Failed to reorder exercise')
   }
 }
 

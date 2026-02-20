@@ -49,6 +49,26 @@
       </div>
     </div>
   </div>
+  <UiModal :open="confirmOpen" @close="confirmOpen = false">
+    <h3 class="text-lg font-bold text-white uppercase tracking-wide mb-4">{{ confirmTitle }}</h3>
+    <p class="text-sm text-gray-400 mb-6">{{ confirmMessage }}</p>
+    <template #footer>
+      <div class="flex justify-end space-x-3">
+        <UiButton variant="ghost" :disabled="confirming" @click="confirmOpen = false">Cancel</UiButton>
+        <UiButton variant="primary" :loading="confirming" @click="runConfirm">{{ confirmLabel }}</UiButton>
+      </div>
+    </template>
+  </UiModal>
+
+  <UiModal :open="alertOpen" @close="alertOpen = false">
+    <h3 class="text-lg font-bold text-white uppercase tracking-wide mb-4">{{ alertTitle }}</h3>
+    <p class="text-sm text-gray-400 mb-6">{{ alertMessage }}</p>
+    <template #footer>
+      <div class="flex justify-end">
+        <UiButton variant="primary" @click="alertOpen = false">OK</UiButton>
+      </div>
+    </template>
+  </UiModal>
   </template>
   <script setup lang="ts">
   import type { Workout } from '~~/types/workout'
@@ -62,6 +82,41 @@
   const offset = ref(0)
   const q = ref('')
   const successMessage = ref('')
+  const alertOpen = ref(false)
+  const alertTitle = ref('')
+  const alertMessage = ref('')
+  const confirmOpen = ref(false)
+  const confirmTitle = ref('')
+  const confirmMessage = ref('')
+  const confirmLabel = ref('Confirm')
+  const confirming = ref(false)
+  const confirmAction = ref<null | (() => Promise<void> | void)>(null)
+
+  const openAlert = (message: string, title = 'Something went wrong') => {
+    alertTitle.value = title
+    alertMessage.value = message
+    alertOpen.value = true
+  }
+
+  const openConfirm = (options: { title: string; message: string; confirmLabel?: string; onConfirm: () => Promise<void> | void }) => {
+    confirmTitle.value = options.title
+    confirmMessage.value = options.message
+    confirmLabel.value = options.confirmLabel || 'Confirm'
+    confirmAction.value = options.onConfirm
+    confirmOpen.value = true
+  }
+
+  const runConfirm = async () => {
+    const action = confirmAction.value
+    if (!action || confirming.value) return
+    try {
+      confirming.value = true
+      await action()
+      confirmOpen.value = false
+    } finally {
+      confirming.value = false
+    }
+  }
   
   async function fetchPage(loadMore = false) {
     if (!uid.value) return
@@ -123,14 +178,20 @@
   }
   
   const doRestore = async (id: string) => {
-    if (!confirm('Restore this workout to the main list?')) return
-    if (!uid.value) return
-    try {
-      await restore(uid.value, id)
-      successMessage.value = 'Workout restored successfully'
-      await fetchPage(false)
-    } catch (e) {
-      alert('Failed to restore workout')
-    }
+    openConfirm({
+      title: 'Restore workout',
+      message: 'Restore this workout to the main list?',
+      confirmLabel: 'Restore',
+      onConfirm: async () => {
+        if (!uid.value) return
+        try {
+          await restore(uid.value, id)
+          successMessage.value = 'Workout restored successfully'
+          await fetchPage(false)
+        } catch (e) {
+          openAlert('Failed to restore workout')
+        }
+      }
+    })
   }
   </script>

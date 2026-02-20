@@ -27,7 +27,7 @@
                 class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
                 active-class="text-primary bg-primary/10">Progress</NuxtLink>
 
-              <div v-if="user" class="flex items-center ml-4 space-x-3 pl-4 border-l border-white/10">
+              <div v-if="isHydrated && user" class="flex items-center ml-4 space-x-3 pl-4 border-l border-white/10">
                 <span class="text-sm text-gray-300 font-medium">{{ user.displayName || user.email }}</span>
                 <img v-if="user.photoURL" :src="user.photoURL" alt="User avatar"
                   class="h-9 w-9 rounded-full ring-2 ring-primary/20" referrerpolicy="no-referrer">
@@ -75,7 +75,7 @@
           class="block px-3 py-2 rounded-lg text-base font-medium text-gray-400 hover:bg-white/5 hover:text-white"
           active-class="text-primary bg-primary/10">
           Progress</NuxtLink>
-        <div v-if="user" class="pt-4 mt-2 border-t border-white/10">
+        <div v-if="isHydrated && user" class="pt-4 mt-2 border-t border-white/10">
           <div class="flex items-center px-3 mb-3">
             <div class="flex-shrink-0">
               <img v-if="user.photoURL" :src="user.photoURL" alt="User avatar"
@@ -108,7 +108,12 @@
 import { useAuth } from '~/composables/useAuth'
 
 const mobileOpen = ref(false)
+const isHydrated = ref(false)
 const { user, logout } = useAuth()
+
+onMounted(() => {
+  isHydrated.value = true
+})
 
 const handleLogout = async () => {
   await logout()

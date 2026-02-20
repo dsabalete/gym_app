@@ -92,6 +92,16 @@
         <UiButton type="submit" :loading="loading" variant="primary">Save Workout</UiButton>
       </div>
     </form>
+
+    <UiModal :open="alertOpen" @close="alertOpen = false">
+      <h3 class="text-lg font-bold text-white uppercase tracking-wide mb-4">{{ alertTitle }}</h3>
+      <p class="text-sm text-gray-400 mb-6">{{ alertMessage }}</p>
+      <template #footer>
+        <div class="flex justify-end">
+          <UiButton variant="primary" @click="alertOpen = false">OK</UiButton>
+        </div>
+      </template>
+    </UiModal>
   </div>
 </template>
 
@@ -104,8 +114,17 @@ const workout = ref<{ date: string; exercises: Array<{ id: number; name: string;
   date: '',
   exercises: []
 })
+const alertOpen = ref(false)
+const alertTitle = ref('')
+const alertMessage = ref('')
 
 const { uid, ready } = useAuth()
+
+const openAlert = (message: string, title = 'Validation') => {
+  alertTitle.value = title
+  alertMessage.value = message
+  alertOpen.value = true
+}
 
 const addExercise = () => {
   workout.value.exercises.push({
@@ -145,27 +164,27 @@ const removeSet = (exerciseIndex: number, setIndex: number) => {
 const saveWorkout = async () => {
   // Validate form
   if (!workout.value.date) {
-    alert('Please select a workout date')
+    openAlert('Please select a workout date')
     return
   }
 
   if (workout.value.exercises.length === 0) {
-    alert('Please add at least one exercise')
+    openAlert('Please add at least one exercise')
     return
   }
 
   for (const exercise of workout.value.exercises) {
     if (!exercise.name.trim()) {
-      alert('Please enter a name for all exercises')
+      openAlert('Please enter a name for all exercises')
       return
     }
     if (exercise.sets.length === 0) {
-      alert('Please add at least one set for each exercise')
+      openAlert('Please add at least one set for each exercise')
       return
     }
     for (const set of exercise.sets) {
       if (!set.reps || !set.weight) {
-        alert('Please enter reps and weight for all sets')
+        openAlert('Please enter reps and weight for all sets')
         return
       }
     }
@@ -192,7 +211,7 @@ const saveWorkout = async () => {
     await navigateTo(`/workouts/${newId}`)
   } catch (error) {
     console.error('Error saving workout:', error)
-    alert('Failed to save workout. Please try again.')
+    openAlert('Failed to save workout. Please try again.', 'Something went wrong')
   } finally {
     loading.value = false
   }

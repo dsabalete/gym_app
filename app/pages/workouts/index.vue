@@ -7,8 +7,13 @@
         </NuxtLink>
       </template>
     </LayoutPageHeader>
-    <WorkoutsWorkoutList :workouts="workouts" :loading="loading" @delete="deleteWorkout" @copy="handleCopyRequested"
-      @archive="archiveWorkout" />
+    <WorkoutsWorkoutList
+      :workouts="workouts"
+      :loading="loading"
+      @delete="requestDelete"
+      @copy="handleCopyRequested"
+      @archive="requestArchive"
+    />
 
     <UiAlert v-if="successMessage" type="success" :title="successMessage" dismissible @close="successMessage = ''" />
 
@@ -42,6 +47,27 @@
         </div>
       </template>
     </UiModal>
+
+    <UiModal :open="confirmOpen" @close="confirmOpen = false">
+      <h3 class="text-lg font-bold text-white uppercase tracking-wide mb-4">{{ confirmTitle }}</h3>
+      <p class="text-sm text-gray-400 mb-6">{{ confirmMessage }}</p>
+      <template #footer>
+        <div class="flex justify-end space-x-3">
+          <UiButton variant="ghost" :disabled="confirming" @click="confirmOpen = false">Cancel</UiButton>
+          <UiButton variant="primary" :loading="confirming" @click="runConfirm">{{ confirmLabel }}</UiButton>
+        </div>
+      </template>
+    </UiModal>
+
+    <UiModal :open="alertOpen" @close="alertOpen = false">
+      <h3 class="text-lg font-bold text-white uppercase tracking-wide mb-4">{{ alertTitle }}</h3>
+      <p class="text-sm text-gray-400 mb-6">{{ alertMessage }}</p>
+      <template #footer>
+        <div class="flex justify-end">
+          <UiButton variant="primary" @click="alertOpen = false">OK</UiButton>
+        </div>
+      </template>
+    </UiModal>
   </div>
 </template>
 <script setup lang="ts">
@@ -59,11 +85,47 @@ const targetDate = ref(new Date().toISOString().split('T')[0])
 const copying = ref(false)
 const increaseRepsOne = ref(false)
 
+const alertOpen = ref(false)
+const alertTitle = ref('')
+const alertMessage = ref('')
+const confirmOpen = ref(false)
+const confirmTitle = ref('')
+const confirmMessage = ref('')
+const confirmLabel = ref('Confirm')
+const confirming = ref(false)
+const confirmAction = ref<null | (() => Promise<void> | void)>(null)
+
 // Use the new lazy-loading fetch mechanism
 const { status, error: fetchError } = useWorkoutsFetch(uid)
 
 // Combined loading state for UI
 const loading = computed(() => status.value === 'pending' || actionLoading.value)
+
+const openAlert = (message: string, title = 'Something went wrong') => {
+  alertTitle.value = title
+  alertMessage.value = message
+  alertOpen.value = true
+}
+
+const openConfirm = (options: { title: string; message: string; confirmLabel?: string; onConfirm: () => Promise<void> | void }) => {
+  confirmTitle.value = options.title
+  confirmMessage.value = options.message
+  confirmLabel.value = options.confirmLabel || 'Confirm'
+  confirmAction.value = options.onConfirm
+  confirmOpen.value = true
+}
+
+const runConfirm = async () => {
+  const action = confirmAction.value
+  if (!action || confirming.value) return
+  try {
+    confirming.value = true
+    await action()
+    confirmOpen.value = false
+  } finally {
+    confirming.value = false
+  }
+}
 
 const loadMore = async () => {
   try {
@@ -77,27 +139,39 @@ const loadMore = async () => {
   }
 }
 
-const deleteWorkout = async (workoutId: string) => {
-  if (!confirm('Are you sure you want to delete this workout?')) return
-  try {
-    if (!uid.value) return
-    await remove(workoutId, uid.value)
-  } catch (error) {
-    console.error('Error deleting workout:', error)
-    alert('Failed to delete workout')
-  }
+const requestDelete = (workoutId: string) => {
+  openConfirm({
+    title: 'Delete workout',
+    message: 'Are you sure you want to delete this workout?',
+    confirmLabel: 'Delete',
+    onConfirm: async () => {
+      try {
+        if (!uid.value) return
+        await remove(workoutId, uid.value)
+      } catch (error) {
+        console.error('Error deleting workout:', error)
+        openAlert('Failed to delete workout')
+      }
+    }
+  })
 }
 
-const archiveWorkout = async (workoutId: string) => {
-  if (!confirm('Archive this workout? You can restore it later.')) return
-  try {
-    if (!uid.value) return
-    await archive(uid.value, workoutId)
-    successMessage.value = 'Workout marked as completed'
-  } catch (error) {
-    console.error('Error archiving workout:', error)
-    alert('Failed to archive workout')
-  }
+const requestArchive = (workoutId: string) => {
+  openConfirm({
+    title: 'Complete workout',
+    message: 'Archive this workout? You can restore it later.',
+    confirmLabel: 'Complete',
+    onConfirm: async () => {
+      try {
+        if (!uid.value) return
+        await archive(uid.value, workoutId)
+        successMessage.value = 'Workout marked as completed'
+      } catch (error) {
+        console.error('Error archiving workout:', error)
+        openAlert('Failed to archive workout')
+      }
+    }
+  })
 }
 
 const handleCopyRequested = (workout: any) => {
@@ -117,7 +191,7 @@ const confirmCopy = async () => {
     await list(uid.value, refreshLimit)
   } catch (error) {
     console.error('Error copying workout:', error)
-    alert('Failed to copy workout')
+    openAlert('Failed to copy workout')
   } finally {
     copying.value = false
   }
