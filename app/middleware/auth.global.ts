@@ -1,4 +1,7 @@
-export default defineNuxtRouteMiddleware(async (to) => {
+export default defineNuxtRouteMiddleware(async (to, from) => {
+    // Skip auth check during SSR - auth only initializes on client
+    if (import.meta.server) return
+
     const { user, ready } = useAuth()
 
     // Wait for auth to be initialized
