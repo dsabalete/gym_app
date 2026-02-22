@@ -7,6 +7,16 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     // Wait for auth to be initialized
     await ready
 
+    // Double-check Firebase's currentUser as a fallback
+    // (onAuthStateChanged might not fire in some edge cases)
+    if (!user.value) {
+        const { getAuth } = await import('firebase/auth')
+        const auth = getAuth()
+        if (auth.currentUser) {
+            user.value = auth.currentUser
+        }
+    }
+
     // If user is authenticated and trying to access login page, redirect to home
     if (to.path === '/login' && user.value) {
         return navigateTo('/')
