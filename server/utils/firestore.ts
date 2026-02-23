@@ -7,9 +7,9 @@ export function getDb(): Firestore {
   if (db) return db
 
   const config = useRuntimeConfig()
-  const projectId = config.firebase?.projectId
-  const clientEmail = config.firebase?.clientEmail
-  let privateKey = config.firebase?.privateKey
+  const projectId = config.firebase?.projectId || process.env.FIREBASE_PROJECT_ID
+  const clientEmail = config.firebase?.clientEmail || process.env.FIREBASE_CLIENT_EMAIL
+  let privateKey = config.firebase?.privateKey || process.env.FIREBASE_PRIVATE_KEY
 
   if (!projectId || !clientEmail || !privateKey) {
     throw createError({ statusCode: 500, statusMessage: 'Firebase configuration is missing' })

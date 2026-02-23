@@ -94,15 +94,16 @@ export function useWorkouts() {
    * Good for initial load with lazy: true.
    */
   function useWorkoutsFetch(userId: MaybeRefOrGetter<string | null>, limitVal = 10) {
-    return useFetch<{ success: boolean; workouts: Workout[] }>('/api/workouts', {
+    const queryUserId = computed(() => toValue(userId) || '')
+    const fetchResult = useFetch<{ success: boolean; workouts: Workout[] }>('/api/workouts', {
       query: {
-        userId: toRef(userId),
+        userId: queryUserId,
         limit: limitVal,
         offset: 0
       },
       lazy: true,
+      immediate: false,
       key: computed(() => `workouts-${toValue(userId)}`),
-      watch: [toRef(userId)],
       onResponse({ response }) {
         if (response._data?.success) {
           const fetchedWorkouts = response._data.workouts
@@ -118,6 +119,14 @@ export function useWorkouts() {
         }
       }
     })
+
+    watch(queryUserId, (value) => {
+      if (value) {
+        fetchResult.execute()
+      }
+    }, { immediate: !!queryUserId.value })
+
+    return fetchResult
   }
 
   async function create(userId: string, payload: { date: string; exercises?: any[] }) {
